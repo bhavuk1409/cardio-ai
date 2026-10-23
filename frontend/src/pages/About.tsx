@@ -5,7 +5,7 @@ export default function About() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">About This Project</h1>
-        <p className="mt-1 text-gray-500">CSET343 — Milestone 3 & 4 Academic Submission</p>
+        <p className="mt-1 text-gray-500">CSET343 (Session 2026–2027) — Academic Submission</p>
       </div>
 
       {/* Team */}

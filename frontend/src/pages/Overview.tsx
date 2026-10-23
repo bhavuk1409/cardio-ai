@@ -44,7 +44,7 @@ export default function Overview() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">AI-Driven Clinical Risk Prediction</h1>
         <p className="mt-1 text-gray-500">
-          Cardiovascular Risk Prediction using ML, RAG, SHAP & LLMs — CSET343 Milestone 3 & 4
+          Cardiovascular Risk Prediction using ML, RAG, SHAP & LLMs — CSET343 (Session 2026–2027)
         </p>
       </div>
 

@@ -1,7 +1,7 @@
 # AI-Driven Clinical Risk Prediction & Context-Aware Medical Information Retrieval
 
 > **A Cardiovascular Risk Prediction Case Study using Machine Learning, Retrieval-Augmented Generation (RAG), SHAP, and Large Language Models.**  
-> Course: **CSET343 — Artificial Intelligence and Machine Learning Applications** (Academic Session: 2024–2025)  
+> Course: **CSET343 — Artificial Intelligence and Machine Learning Applications** (Academic Session: 2026–2027)  
 > Comprehensive Milestones 1, 2, 3, 4 & 5 Project Submission  
 
 ---

@@ -3,7 +3,7 @@
 
 **Institution:** Bennett University / School of Computer Science Engineering and Technology  
 **Course:** CSET343 — Artificial Intelligence and Machine Learning Applications  
-**Academic Session:** 2024–2025  
+**Academic Session:** 2026–2027  
 **Evaluation Window:** October 26 – October 30  
 **Project Title:** AI-Driven Clinical Risk Prediction and Context-Aware Medical Information Retrieval  
 **Subtitle:** A Cardiovascular Risk Prediction Case Study using Machine Learning, Retrieval-Augmented Generation (RAG), SHAP and Large Language Models  

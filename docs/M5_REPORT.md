@@ -157,7 +157,7 @@ The system underwent automated validation covering unit, integration, and end-to
 
 ## 5. Clarity and Organization of Presentation
 
-A structured 5–7 minute evaluative presentation script is provided in [`docs/DEMO_SCRIPT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/DEMO_SCRIPT.md), formatted for faculty assessment:
+A structured 5–7 minute evaluative presentation outline formatted for faculty assessment:
 
 ```
 +------------------------------------------------------------------------------------+

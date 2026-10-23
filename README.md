@@ -78,8 +78,7 @@ clinical-risk-prediction/
 │   ├── M4_REPORT.md             # Formal Milestone 4 Trained-Model Modules Report
 │   ├── M5_REPORT.md             # Formal Milestone 5 Final Research Paper & Project Report
 │   ├── architecture.md          # Full architectural specification with Mermaid diagram
-│   ├── methodology.md           # Dataset, preprocessing, models & RAG methodology
-│   └── DEMO_SCRIPT.md           # Step-by-step 5-7 minute professor demonstration script
+│   └── methodology.md           # Dataset, preprocessing, models & RAG methodology
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -200,4 +199,3 @@ npm run build
 - **Milestone 5 Report (Final Research Paper, Format Compliance & Team Contributions):** [`docs/M5_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M5_REPORT.md)
 - **System Architecture (with Mermaid Diagram):** [`docs/architecture.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/architecture.md)
 - **Technical Methodology:** [`docs/methodology.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/methodology.md)
-- **Professor Live Demo Script (5–7 Minutes):** [`docs/DEMO_SCRIPT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/DEMO_SCRIPT.md)

@@ -89,12 +89,12 @@ export default function MedicalAssistant() {
       transition={{ duration: 0.3 }}
     >
       <div>
-        <div className="eyebrow eyebrow--cyan">RAG ARCHITECTURE · CONTEXT-AWARE INTELLIGENCE</div>
+        <div className="eyebrow eyebrow--cyan">MEDICAL ASSISTANT</div>
         <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
-          MEDICAL INFORMATION RETRIEVAL TERMINAL
+          CLINICAL INFORMATION RETRIEVAL
         </h1>
         <p className="mt-1 text-xs font-mono text-gray-400">
-          Dense retrieval over ChromaDB with all-MiniLM-L6-v2 embeddings and prompt-constrained generation via Groq API.
+          Answers grounded in WHO, CDC, AHA, and NIH medical guidelines.
         </p>
       </div>
 

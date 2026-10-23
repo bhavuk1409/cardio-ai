@@ -32,12 +32,12 @@ export default function KnowledgeSources() {
       transition={{ duration: 0.3 }}
     >
       <div>
-        <div className="eyebrow eyebrow--cyan">RAG KNOWLEDGE REPOSITORY · 15 CURATED GUIDELINES</div>
+        <div className="eyebrow eyebrow--cyan">KNOWLEDGE BASE</div>
         <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
-          CARDIOVASCULAR EVIDENCE SOURCES
+          CARDIOVASCULAR GUIDELINE REPOSITORY
         </h1>
         <p className="mt-1 text-xs font-mono text-gray-400">
-          Peer-reviewed medical guidelines embedded into the local ChromaDB vector store for grounded generation.
+          Curated clinical evidence from WHO, CDC, AHA, and NIH embedded in ChromaDB.
         </p>
       </div>
 

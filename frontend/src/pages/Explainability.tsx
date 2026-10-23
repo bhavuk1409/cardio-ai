@@ -35,12 +35,12 @@ export default function Explainability() {
       transition={{ duration: 0.3 }}
     >
       <div>
-        <div className="eyebrow eyebrow--cyan">MILESTONE 4 · MODEL INTERPRETABILITY</div>
+        <div className="eyebrow eyebrow--cyan">EXPLAINABILITY</div>
         <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
-          SHAP GAME-THEORETIC EXPLAINABILITY CONSOLE
+          SHAP FEATURE ATTRIBUTION
         </h1>
         <p className="mt-1 text-xs font-mono text-gray-400">
-          Decomposing individual predictions into Shapley additive contributions alongside global training feature importance.
+          Individual patient attributions and global dataset feature rankings.
         </p>
       </div>
 

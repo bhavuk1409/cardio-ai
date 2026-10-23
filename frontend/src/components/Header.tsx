@@ -24,17 +24,17 @@ export function Header() {
   }, []);
 
   const statusText =
-    apiUp === null ? 'INITIALIZING' : apiUp ? 'TELEMETRY LIVE' : 'BACKEND OFFLINE';
+    apiUp === null ? 'CONNECTING' : apiUp ? 'LIVE' : 'OFFLINE';
   const dotClass = apiUp === null ? 'dot--wait' : apiUp ? 'dot--live' : 'dot--off';
 
   const navItems = [
     { to: '/', label: 'Overview' },
-    { to: '/predict', label: 'Risk Console' },
-    { to: '/explain', label: 'SHAP Attribution' },
+    { to: '/predict', label: 'Predict' },
+    { to: '/explain', label: 'SHAP' },
     { to: '/models', label: 'Benchmark' },
-    { to: '/assistant', label: 'Medical AI (RAG)' },
-    { to: '/sources', label: 'Knowledge Base' },
-    { to: '/about', label: 'M1–M5 Rubric' },
+    { to: '/assistant', label: 'Medical AI' },
+    { to: '/sources', label: 'Knowledge' },
+    { to: '/about', label: 'About' },
   ];
 
   return (
@@ -53,15 +53,11 @@ export function Header() {
         </svg>
         <div>
           <h1 className="masthead__title">CLINICAL AI</h1>
-          <p className="masthead__sub">CARDIOVASCULAR TELEMETRY · SHAP · GROQ RAG</p>
+          <p className="masthead__sub">CARDIOVASCULAR RISK & RAG</p>
         </div>
       </div>
 
       <div className="masthead__right">
-        <span className="badge badge--approx">
-          SESSION 2026–2027 · CSET343
-        </span>
-
         <div className="status">
           <span className={`dot ${dotClass}`} />
           <span className="status__text">{statusText}</span>

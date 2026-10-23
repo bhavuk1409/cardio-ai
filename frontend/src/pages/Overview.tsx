@@ -5,60 +5,40 @@ import { api } from '../services/api';
 import { StatReadout } from '../components/StatReadout';
 
 export default function Overview() {
-  const [health, setHealth] = useState<any>(null);
   const [metrics, setMetrics] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.health(), api.modelMetrics()])
-      .then(([h, m]) => {
-        setHealth(h);
-        setMetrics(m);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    api.modelMetrics()
+      .then((m) => setMetrics(m))
+      .catch(() => {});
   }, []);
 
   const rf = metrics?.models?.random_forest;
 
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-6"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Hero Header */}
       <div className="panel panel--notch panel-pad relative overflow-hidden">
-        <div className="eyebrow mb-2">CSET343 · SESSION 2026–2027 · BENNETT UNIVERSITY</div>
+        <div className="eyebrow mb-2">DECISION SUPPORT SYSTEM</div>
         <h1 className="text-3xl md:text-4xl font-bold font-display tracking-wider text-white">
-          AI-DRIVEN CLINICAL RISK PREDICTION
+          CLINICAL RISK PREDICTION & RAG
         </h1>
-        <p className="mt-2 text-sm text-gray-400 font-mono max-w-3xl leading-relaxed">
-          Cardiovascular Disease Case Study integrating Reproducible Supervised ML (Logistic Regression, Random Forest, XGBoost),
-          Game-Theoretic SHAP Explainability, and Context-Aware Medical Information Retrieval with Groq & ChromaDB.
+        <p className="mt-2 text-xs md:text-sm text-gray-400 font-mono max-w-2xl leading-relaxed">
+          Cardiovascular risk classification using supervised ML (Random Forest champion), game-theoretic SHAP explainability, and context-aware medical QA powered by Groq & ChromaDB.
         </p>
-
-        <div className="flex flex-wrap items-center gap-3 mt-5 pt-4 border-t border-[var(--line)] text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <span className="dot dot--live" />
-            <span className="text-gray-300">SYSTEM STATUS:</span>
-            <span className="text-emerald-400 font-semibold">ALL SUBSYSTEMS OPERATIONAL</span>
-          </div>
-          <span className="text-gray-600">|</span>
-          <span className="text-gray-400">CHAMPION MODEL: <b className="text-cyan-400">RANDOM FOREST</b></span>
-          <span className="text-gray-600">|</span>
-          <span className="text-gray-400">RETRIEVAL: <b className="text-cyan-400">CHROMADB (30 CHUNKS)</b></span>
-          <span className="text-gray-600">|</span>
-          <span className="text-gray-400">LLM: <b className="text-cyan-400">GROQ API</b></span>
-        </div>
       </div>
 
       {/* Model Benchmark Telemetry Readouts */}
       <div>
         <div className="section-label">
-          <span>CHAMPION MODEL TEST EVALUATION (INDEPENDENT 20% TEST SET)</span>
-          <b>RANDOM FOREST</b>
+          <span>CHAMPION MODEL PERFORMANCE</span>
+          <b>TEST SET EVALUATION ($n=61$)</b>
         </div>
         <div className="stat-grid">
           <StatReadout
@@ -66,10 +46,10 @@ export default function Overview() {
             value={rf ? rf.accuracy * 100 : 90.16}
             unit="%"
             accent="var(--green)"
-            subtitle="55 / 61 correct test predictions"
+            subtitle="55 / 61 correct predictions"
           />
           <StatReadout
-            label="Sensitivity (Recall)"
+            label="Sensitivity"
             value={rf ? rf.recall * 100 : 96.43}
             unit="%"
             accent="var(--cyan)"
@@ -83,20 +63,20 @@ export default function Overview() {
             subtitle="Harmonic mean of precision & recall"
           />
           <StatReadout
-            label="ROC-AUC Score"
+            label="ROC-AUC"
             value={rf?.roc_auc ? rf.roc_auc * 100 : 93.72}
             unit="%"
             accent="var(--amber)"
-            subtitle="High discriminative separation"
+            subtitle="Discrimination index"
           />
         </div>
       </div>
 
-      {/* Interactive Telemetry Modules Grid */}
+      {/* Interactive Core Workspaces Grid */}
       <div>
         <div className="section-label">
-          <span>CLINICAL AI APPLICATION MODULES</span>
-          <b>CORE WORKSPACES</b>
+          <span>WORKSPACES</span>
+          <b>QUICK ACCESS</b>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card 1: Risk Prediction */}
@@ -105,18 +85,17 @@ export default function Overview() {
             className="panel panel-pad hover:border-[var(--line-strong)] transition-all group block"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="eyebrow">MODULE 01</span>
-              <span className="badge badge--red">INFERENCE CONSOLE</span>
+              <span className="eyebrow">INFERENCE</span>
+              <span className="badge badge--red">MODEL PREDICT</span>
             </div>
-            <h3 className="font-display font-bold text-xl text-white group-hover:text-red-400 transition-colors">
-              Cardiovascular Risk Prediction Form
+            <h3 className="font-display font-bold text-lg text-white group-hover:text-red-400 transition-colors">
+              Risk Prediction Console
             </h3>
-            <p className="mt-2 text-xs font-mono text-gray-400 leading-relaxed">
-              Input 13 patient biomarkers (ST depression, fluoroscopy vessels, max heart rate, chest pain type)
-              to receive a deterministic model risk probability and classification flag.
+            <p className="mt-1.5 text-xs font-mono text-gray-400 leading-relaxed">
+              Input 13 cardiovascular biomarkers or load patient profiles to generate real-time probabilistic risk scores.
             </p>
-            <div className="mt-4 flex items-center text-xs font-mono text-red-400 group-hover:translate-x-1 transition-transform">
-              LAUNCH PREDICTION CONSOLE →
+            <div className="mt-3 flex items-center text-xs font-mono text-red-400 group-hover:translate-x-1 transition-transform">
+              OPEN CONSOLE →
             </div>
           </Link>
 
@@ -126,18 +105,17 @@ export default function Overview() {
             className="panel panel-pad hover:border-[var(--line-strong)] transition-all group block"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="eyebrow eyebrow--cyan">MODULE 02</span>
-              <span className="badge badge--cyan">EXPLAINABILITY</span>
+              <span className="eyebrow eyebrow--cyan">ATTRIBUTION</span>
+              <span className="badge badge--cyan">SHAPLEY VALUES</span>
             </div>
-            <h3 className="font-display font-bold text-xl text-white group-hover:text-cyan-400 transition-colors">
-              SHAP Game-Theoretic Attribution
+            <h3 className="font-display font-bold text-lg text-white group-hover:text-cyan-400 transition-colors">
+              SHAP Explainability
             </h3>
-            <p className="mt-2 text-xs font-mono text-gray-400 leading-relaxed">
-              Inspect patient-level Shapley waterfall bars indicating which biomarkers drove the prediction upward or downward,
-              alongside the global feature importance ranking across the dataset.
+            <p className="mt-1.5 text-xs font-mono text-gray-400 leading-relaxed">
+              Decompose individual patient predictions into marginal contributions and review global feature importance.
             </p>
-            <div className="mt-4 flex items-center text-xs font-mono text-cyan-400 group-hover:translate-x-1 transition-transform">
-              EXPLORE SHAP ATTRIBUTION →
+            <div className="mt-3 flex items-center text-xs font-mono text-cyan-400 group-hover:translate-x-1 transition-transform">
+              VIEW ATTRIBUTIONS →
             </div>
           </Link>
 
@@ -147,18 +125,17 @@ export default function Overview() {
             className="panel panel-pad hover:border-[var(--line-strong)] transition-all group block"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="eyebrow eyebrow--green">MODULE 03</span>
-              <span className="badge badge--green">BENCHMARK</span>
+              <span className="eyebrow eyebrow--green">BENCHMARK</span>
+              <span className="badge badge--green">3 MODELS</span>
             </div>
-            <h3 className="font-display font-bold text-xl text-white group-hover:text-emerald-400 transition-colors">
-              Three-Model Evaluation Matrix
+            <h3 className="font-display font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">
+              Model Benchmark
             </h3>
-            <p className="mt-2 text-xs font-mono text-gray-400 leading-relaxed">
-              Rigorous comparative benchmark between Logistic Regression (M3 Baseline), Random Forest (M4 Champion),
-              and XGBoost, including confusion matrices and test metric distributions.
+            <p className="mt-1.5 text-xs font-mono text-gray-400 leading-relaxed">
+              Compare Random Forest against XGBoost and the Logistic Regression baseline across confusion matrices and ROC curves.
             </p>
-            <div className="mt-4 flex items-center text-xs font-mono text-emerald-400 group-hover:translate-x-1 transition-transform">
-              VIEW MODEL BENCHMARK →
+            <div className="mt-3 flex items-center text-xs font-mono text-emerald-400 group-hover:translate-x-1 transition-transform">
+              COMPARE BENCHMARKS →
             </div>
           </Link>
 
@@ -168,78 +145,19 @@ export default function Overview() {
             className="panel panel-pad hover:border-[var(--line-strong)] transition-all group block"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="eyebrow">MODULE 04</span>
-              <span className="badge badge--approx">RAG ASSISTANT</span>
+              <span className="eyebrow">RETRIEVAL</span>
+              <span className="badge badge--approx">GROQ RAG</span>
             </div>
-            <h3 className="font-display font-bold text-xl text-white group-hover:text-purple-400 transition-colors">
-              Context-Aware Medical AI Assistant
+            <h3 className="font-display font-bold text-lg text-white group-hover:text-purple-400 transition-colors">
+              Medical AI Assistant
             </h3>
-            <p className="mt-2 text-xs font-mono text-gray-400 leading-relaxed">
-              Ask cardiological questions synthesized via Groq LLM grounded strictly in 15 peer-reviewed
-              guidelines from the WHO, CDC, American Heart Association, and NIH.
+            <p className="mt-1.5 text-xs font-mono text-gray-400 leading-relaxed">
+              Interactive clinical QA grounded in 15 peer-reviewed guidelines from WHO, CDC, AHA, and NIH.
             </p>
-            <div className="mt-4 flex items-center text-xs font-mono text-purple-400 group-hover:translate-x-1 transition-transform">
-              OPEN MEDICAL ASSISTANT →
+            <div className="mt-3 flex items-center text-xs font-mono text-purple-400 group-hover:translate-x-1 transition-transform">
+              LAUNCH ASSISTANT →
             </div>
           </Link>
-        </div>
-      </div>
-
-      {/* Dataset & Subsystem Diagnostic Telemetry */}
-      <div className="panel panel-pad">
-        <div className="section-label">
-          <span>PIPELINE SPECIFICATIONS & DATASET TELEMETRY</span>
-          <b>UCI CLEVELAND REPOSITORY ID 45</b>
-        </div>
-        <div className="table-wrap">
-          <table className="telemetry-table">
-            <thead>
-              <tr>
-                <th>Telemetry Parameter</th>
-                <th>Dataset & Preprocessing Value</th>
-                <th>Validation Protocol</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="text-gray-400">Source Dataset</td>
-                <td className="text-white font-semibold">UCI Machine Learning Repository #45 (Cleveland Subset)</td>
-                <td><span className="badge badge--trained">OFFICIAL REPO</span></td>
-              </tr>
-              <tr>
-                <td className="text-gray-400">Total Records & Features</td>
-                <td className="text-white">303 patient records · 13 clinical biomarkers</td>
-                <td><span className="badge badge--trained">VERIFIED</span></td>
-              </tr>
-              <tr>
-                <td className="text-gray-400">Binarized Target Label</td>
-                <td className="text-white">num == 0 → Class 0 (164 records) | num &gt; 0 → Class 1 (139 records)</td>
-                <td><span className="badge badge--green">STRATIFIED 80/20</span></td>
-              </tr>
-              <tr>
-                <td className="text-gray-400">Data Leakage Prevention</td>
-                <td className="text-white">Median imputation & StandardScaler fitted exclusively on training split</td>
-                <td><span className="badge badge--green">NO LEAKAGE</span></td>
-              </tr>
-              <tr>
-                <td className="text-gray-400">Curated RAG Corpus</td>
-                <td className="text-white">15 documents · 30 chunks · all-MiniLM-L6-v2 embeddings · ChromaDB</td>
-                <td><span className="badge badge--cyan">COSINE SIMILARITY</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Educational Notice */}
-      <div className="panel panel-pad border-amber-900/50 bg-amber-950/20">
-        <div className="flex items-start gap-3">
-          <span className="text-amber-500 font-mono text-lg font-bold">⚠</span>
-          <div className="text-xs font-mono text-amber-200/90 leading-relaxed">
-            <strong className="text-amber-400">MANDATORY EDUCATIONAL DISCLAIMER:</strong> This application is an educational decision-support
-            prototype developed for academic evaluation in course CSET343 at Bennett University. It is <strong>NOT</strong> a certified medical device
-            and must never be used for clinical triage or diagnostic decisions in real patients. Always consult qualified healthcare professionals.
-          </div>
         </div>
       </div>
     </motion.div>

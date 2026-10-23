@@ -84,12 +84,12 @@ export default function ModelPerformance() {
       transition={{ duration: 0.3 }}
     >
       <div>
-        <div className="eyebrow eyebrow--green">MILESTONES 3 & 4 · MODEL EVALUATION & BENCHMARK</div>
+        <div className="eyebrow eyebrow--green">BENCHMARK</div>
         <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
-          THREE-MODEL PERFORMANCE BENCHMARK
+          MODEL PERFORMANCE EVALUATION
         </h1>
         <p className="mt-1 text-xs font-mono text-gray-400">
-          Independent 20% stratified test partition ($n = 61$). Preprocessor fitted strictly on training data with no leakage.
+          Independent 20% test partition ($n = 61$) comparison across 3 trained models.
         </p>
       </div>
 

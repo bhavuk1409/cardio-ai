@@ -89,12 +89,12 @@ export default function RiskPrediction() {
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <div className="eyebrow">MILESTONE 4 · TRAINED-MODEL DEMONSTRATION</div>
+        <div className="eyebrow">INFERENCE ENGINE</div>
         <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
-          CARDIOVASCULAR RISK TELEMETRY CONSOLE
+          CARDIOVASCULAR RISK PREDICTION
         </h1>
         <p className="mt-1 text-xs font-mono text-gray-400">
-          Supervised inference via Random Forest classifier with continuous probabilistic outputs and real-time SHAP attribution.
+          Supervised Random Forest classification with real-time SHAP feature attribution.
         </p>
       </div>
 

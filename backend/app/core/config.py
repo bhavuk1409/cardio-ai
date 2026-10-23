@@ -11,12 +11,12 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-BASE_DIR = Path(__file__).resolve().parents[3]   # clinical-risk-prediction/backend/
+BASE_DIR = Path(__file__).resolve().parents[2]   # clinical-risk-prediction/backend/
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=str(BASE_DIR / ".env"),
+        env_file=[str(BASE_DIR / ".env"), str(BASE_DIR.parent / ".env")],
         env_file_encoding="utf-8",
         extra="ignore",
         protected_namespaces=("settings_",),

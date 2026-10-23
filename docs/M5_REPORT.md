@@ -20,7 +20,7 @@
 ## Abstract
 Cardiovascular diseases (CVDs) remain the leading contributor to global mortality. While supervised machine learning models demonstrate considerable predictive potential in cardiology, their clinical adoption has been severely hindered by two persistent challenges: black-box opacity and the tendency of unconstrained Large Language Models (LLMs) to hallucinate unverified medical advice. In this work, we propose, implement, and evaluate an integrated dual-stream decision-support architecture that strictly decouples empirical machine learning risk classification from generative natural language interactions. 
 
-Using the benchmark UCI Cleveland Heart Disease dataset (303 records, 13 features), we construct a leak-free preprocessing pipeline and compare an interpretable Logistic Regression baseline against Random Forest and XGBoost classifiers on an independent stratified 20% test partition ($n = 61$). Random Forest achieves champion performance with **90.16% accuracy**, **90.00% F1-score**, and **96.43% recall (sensitivity)**, missing only one positive disease instance. To ensure diagnostic transparency, game-theoretic SHAP (SHapley Additive exPlanations) is integrated to compute both global feature rankings and individual local feature contributions. Concurrently, a privacy-preserving Retrieval-Augmented Generation (RAG) pipeline is constructed using dense `all-MiniLM-L6-v2` embeddings and a local ChromaDB vector store containing 30 chunks extracted from verified clinical guidelines of the WHO, CDC, AHA, and NIH. Grounded natural language explanations are synthesized via Google Gemini 1.5 Flash with strict source citation enforcement, while preserving zero-key graceful degradation. The entire system is packaged as an asynchronous FastAPI backend paired with an accessible, responsive React 18 / TypeScript frontend, validated across 40 automated tests with a 100% pass rate.
+Using the benchmark UCI Cleveland Heart Disease dataset (303 records, 13 features), we construct a leak-free preprocessing pipeline and compare an interpretable Logistic Regression baseline against Random Forest and XGBoost classifiers on an independent stratified 20% test partition ($n = 61$). Random Forest achieves champion performance with **90.16% accuracy**, **90.00% F1-score**, and **96.43% recall (sensitivity)**, missing only one positive disease instance. To ensure diagnostic transparency, game-theoretic SHAP (SHapley Additive exPlanations) is integrated to compute both global feature rankings and individual local feature contributions. Concurrently, a privacy-preserving Retrieval-Augmented Generation (RAG) pipeline is constructed using dense `all-MiniLM-L6-v2` embeddings and a local ChromaDB vector store containing 30 chunks extracted from verified clinical guidelines of the WHO, CDC, AHA, and NIH. Grounded natural language explanations are synthesized via Groq API (Llama 3.3 70B / Llama 3.1 8B) with strict source citation enforcement, while preserving zero-key graceful degradation. The entire system is packaged as an asynchronous FastAPI backend paired with an accessible, responsive React 18 / TypeScript frontend, validated across 40 automated tests with a 100% pass rate.
 
 **Keywords:** Cardiovascular Disease, Machine Learning, Random Forest, SHAP Explainability, Retrieval-Augmented Generation, ChromaDB, FastAPI, React.
 
@@ -86,7 +86,7 @@ The system architecture enforces a clean separation of concerns across client, A
 |                         v                          |   | +--------------------------------------------+ |
 |  +-----------------------------------------------+ |   |                       |                        |
 |  | SHAP Explainability Engine                    | |   |                       v                        |
-|  | (TreeExplainer & LinearExplainer Attributions)| |   | | Google Gemini 1.5 Flash (Fallback: Ollama) | |
+|  | (TreeExplainer & LinearExplainer Attributions)| |   | | Groq API (Llama 3.3 / Llama 3.1, Fallback)   | |
 |  +-----------------------------------------------+ |   | +--------------------------------------------+ |
 +----------------------------------------------------+   +------------------------------------------------+
 ```
@@ -143,7 +143,7 @@ SHAP values provide an additive attribution framework rooted in cooperative game
 ### 3.4 Context-Aware RAG Implementation
 - **Corpus Curation:** 15 canonical clinical documents extracted from WHO, CDC, AHA, and NIH/NHLBI public guidelines.
 - **Dense Vector Search:** Character chunking (400 length, 80 overlap) embedded via `all-MiniLM-L6-v2` into a local ChromaDB collection (30 chunks).
-- **Grounded Generation:** Gemini 1.5 Flash generates answers citing source titles and external URLs. In tests with `GEMINI_API_KEY` omitted, the retrieval engine gracefully returns matching chunks, similarity scores, and canonical links without crashing.
+- **Grounded Generation:** Groq API (Llama 3.3 70B / Llama 3.1 8B) generates answers citing source titles and external URLs. In tests with `GROQ_API_KEY` omitted, the retrieval engine gracefully returns matching chunks, similarity scores, and canonical links without crashing.
 
 ---
 
@@ -200,7 +200,7 @@ In strict accordance with the CSET343 collaborative assessment criteria, project
 - **Retrieval-Augmented Generation (RAG):**
   - Curation of the verified medical guidelines corpus from WHO, CDC, AHA, and NIH (`backend/app/rag/knowledge_base.py`).
   - ChromaDB persistent vector database setup and sentence-transformers embedding pipeline (`backend/app/rag/ingestion.py`, `retrieval.py`).
-  - Google Gemini 1.5 Flash integration with prompt grounding guardrails and fallback handlers (`backend/app/rag/llm.py`).
+  - Groq API integration (Llama 3.3 / Llama 3.1) with prompt grounding guardrails and fallback handlers (`backend/app/rag/llm.py`).
 - **Testing & Academic Reporting:**
   - Author of the 40-test pytest validation suite (`backend/tests/`).
   - Co-author of Milestone 2 Feasibility, Milestone 3 Baseline, and Milestone 5 Final Research Paper reports.

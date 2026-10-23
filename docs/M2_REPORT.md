@@ -54,7 +54,7 @@ A comprehensive multi-dimensional feasibility study was conducted to confirm loc
 |                   | Deterministic local fallback embedded.      | no license fees. |
 +-------------------+---------------------------------------------+------------------+
 | Economic          | Zero paid cloud dependencies. ChromaDB and  | HIGH             |
-|                   | embeddings run 100% locally; Gemini API key | $0 infrastructure|
+|                   | embeddings run 100% locally; Groq API key   | $0 infrastructure|
 |                   | utilizes free tier with Ollama fallback.    | cost.            |
 +-------------------+---------------------------------------------+------------------+
 | Operational &     | Educational prototype; no real PHI handled; | HIGH             |
@@ -100,7 +100,7 @@ A comprehensive multi-dimensional feasibility study was conducted to confirm loc
 [WHO/CDC/AHA/NIH Corpus] ---> [Chunking (400 chars)] ---> [all-MiniLM-L6-v2] ---> [ChromaDB Vectorstore]
                                                                                          |
                                                                                          v
-                                                                             [Gemini LLM Grounded Chat]
+                                                                             [Groq LLM Grounded Chat]
                                                                                          |
                                                                                          v
                                                                              [Modern React Dashboard]

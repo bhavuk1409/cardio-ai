@@ -1,5 +1,5 @@
 """
-LLM integration with Google Gemini (primary) or Ollama (optional fallback).
+LLM integration with Groq (primary) or Ollama (optional fallback).
 
 The LLM is instructed to:
   1. Use retrieved passages as its evidence base.
@@ -51,11 +51,11 @@ def format_context(passages: List[Dict]) -> str:
 
 
 class LLMService:
-    """Wraps Gemini (primary) and Ollama (fallback) for grounded generation."""
+    """Wraps Groq (primary) and Ollama (fallback) for grounded generation."""
 
     def __init__(self):
         self._ready = settings.llm_available
-        self._provider = "gemini" if self._ready else "none"
+        self._provider = "groq" if self._ready else "none"
 
     @property
     def ready(self) -> bool:
@@ -84,7 +84,7 @@ class LLMService:
                 "provider": "none",
                 "sources_used": [],
                 "error": (
-                    "LLM not configured. Set GEMINI_API_KEY in your .env file. "
+                    "LLM not configured. Set GROQ_API_KEY in your .env file. "
                     "Retrieved passages are shown below — you can read them directly."
                 ),
             }
@@ -99,11 +99,11 @@ class LLMService:
             "Cite source names when making specific factual claims."
         )
 
-        # Try Gemini
+        # Try Groq
         try:
-            return self._call_gemini(full_prompt, sources_used)
+            return self._call_groq(full_prompt, sources_used)
         except Exception as exc:
-            logger.error("Gemini call failed: %s", exc)
+            logger.error("Groq call failed: %s", exc)
 
         # Try Ollama fallback
         try:
@@ -117,27 +117,24 @@ class LLMService:
                 "error": f"LLM generation failed: {exc2}",
             }
 
-    def _call_gemini(self, prompt: str, sources_used: List[str]) -> Dict[str, Any]:
-        import google.generativeai as genai
+    def _call_groq(self, prompt: str, sources_used: List[str]) -> Dict[str, Any]:
+        from groq import Groq
 
-        genai.configure(api_key=settings.gemini_api_key)
-        model = genai.GenerativeModel(
-            model_name=settings.gemini_model,
-            system_instruction=SYSTEM_PROMPT,
+        client = Groq(api_key=settings.groq_api_key)
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            model=settings.groq_model,
+            temperature=0.2,
+            max_tokens=1024,
         )
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.GenerationConfig(
-                max_output_tokens=1024,
-                temperature=0.3,
-            ),
-            request_options={"timeout": 30},
-        )
-        answer = response.text.strip()
-        logger.info("Gemini response received (%d chars).", len(answer))
+        answer = chat_completion.choices[0].message.content.strip()
+        logger.info("Groq response received (%d chars).", len(answer))
         return {
             "answer": answer,
-            "provider": f"gemini/{settings.gemini_model}",
+            "provider": f"groq/{settings.groq_model}",
             "sources_used": sources_used,
             "error": None,
         }

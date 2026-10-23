@@ -82,7 +82,7 @@ export default function About() {
             },
             {
               layer: 'LLM Integration',
-              tech: 'Google Gemini (primary) · Ollama (optional fallback)',
+              tech: 'Groq API (Llama 3.3 / Llama 3.1) · Ollama (optional fallback)',
             },
             {
               layer: 'Dataset',
@@ -106,7 +106,7 @@ export default function About() {
           <li>Binary target (num &gt; 0) is not a validated clinical risk score.</li>
           <li>SHAP contributions indicate model behaviour, not medical causation.</li>
           <li>RAG knowledge base is curated manually; live web fetching is not implemented.</li>
-          <li>LLM responses depend on the quality of retrieved context and Gemini availability.</li>
+          <li>LLM responses depend on the quality of retrieved context and Groq API availability.</li>
           <li>No patient data is collected, stored, or used in this application.</li>
         </ul>
       </div>

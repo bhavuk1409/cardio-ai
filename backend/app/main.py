@@ -42,9 +42,9 @@ async def lifespan(app: FastAPI):
         logger.warning("✗ Retrieval service not ready: %s", retrieval_service.error)
 
     if settings.llm_available:
-        logger.info("✓ LLM configured (Gemini)")
+        logger.info("✓ LLM configured (Groq: %s)", settings.groq_model)
     else:
-        logger.info("ℹ LLM not configured — set GEMINI_API_KEY to enable chat generation")
+        logger.info("ℹ LLM not configured — set GROQ_API_KEY to enable chat generation")
 
     logger.info("=== Startup complete ===")
     yield

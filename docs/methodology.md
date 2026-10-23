@@ -106,4 +106,4 @@ To provide medical educational context without allowing LLMs to manipulate numer
 1. **Curated Corpus:** 15 canonical clinical documents extracted from authoritative organizations (WHO, CDC, AHA, NIH).
 2. **Chunking & Vectorization:** Documents segmented into 400-character passages with 80-character overlap (30 chunks total) and vectorized using `sentence-transformers/all-MiniLM-L6-v2`.
 3. **Retrieval Mechanism:** ChromaDB vector database performs cosine similarity search to retrieve top-$k$ passages.
-4. **Strict Grounding Prompt:** Instructs the LLM (Gemini 1.5 Flash) to generate answers citing source titles and URLs, explicitly disclose context gaps, refuse personal diagnoses, and refrain from overriding ML model outputs.
+4. **Strict Grounding Prompt:** Instructs the LLM (Groq API, Llama 3.3 70B) to generate answers citing source titles and URLs, explicitly disclose context gaps, refuse personal diagnoses, and refrain from overriding ML model outputs.

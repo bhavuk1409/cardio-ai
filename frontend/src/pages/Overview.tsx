@@ -60,7 +60,7 @@ export default function Overview() {
           <div className="flex flex-wrap gap-2">
             <StatusBadge ok={health.model_ready} label="ML Models" />
             <StatusBadge ok={health.retrieval_ready} label="Vector Store" />
-            <StatusBadge ok={health.llm_ready} label="LLM (Gemini)" />
+            <StatusBadge ok={health.llm_ready} label="LLM (Groq)" />
           </div>
         ) : (
           <div className="flex items-center gap-2 text-sm text-amber-600">
@@ -108,7 +108,7 @@ export default function Overview() {
           {[
             { to: '/predict', label: 'Risk Prediction', desc: 'Submit patient features and get a model prediction with SHAP explanation.', color: 'blue' },
             { to: '/performance', label: 'Model Performance', desc: 'Compare Logistic Regression, Random Forest and XGBoost metrics.', color: 'green' },
-            { to: '/assistant', label: 'Medical AI Assistant', desc: 'Ask cardiovascular health questions. Powered by RAG + Gemini.', color: 'purple' },
+            { to: '/assistant', label: 'Medical AI Assistant', desc: 'Ask cardiovascular health questions. Powered by RAG + Groq.', color: 'purple' },
           ].map(({ to, label, desc, color }) => (
             <Link
               key={to}

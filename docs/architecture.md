@@ -50,7 +50,7 @@ flowchart TD
         Chunker["Character Chunker (400 chars, 80 overlap)"]
         Embedder["Sentence-Transformers (all-MiniLM-L6-v2)"]
         VectorDB[("ChromaDB Persistent Store")]
-        LLM_Service["Google Gemini API (Fallback: Ollama)"]
+        LLM_Service["Groq API (Llama 3.3 / Llama 3.1, Fallback: Ollama)"]
     end
 
     %% Client to API
@@ -115,4 +115,4 @@ flowchart TD
 2. **Chunking**: Fixed character-level chunking (400 characters, 80 characters overlap) retaining document title, organization, section, and canonical URL.
 3. **Embeddings**: `sentence-transformers/all-MiniLM-L6-v2` (384-dimensional dense vectors).
 4. **Vector Database**: ChromaDB persistent client (`HNSW` cosine similarity index).
-5. **Generation**: Google Gemini API (`gemini-1.5-flash`) with constrained medical system prompt; gracefully degrades to pure retrieval if `GEMINI_API_KEY` is not configured.
+5. **Generation**: Groq API (`llama-3.3-70b-versatile` / `llama-3.1-8b-instant`) with constrained medical system prompt; gracefully degrades to pure retrieval if `GROQ_API_KEY` is not configured.

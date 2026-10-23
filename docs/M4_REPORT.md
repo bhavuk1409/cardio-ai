@@ -95,14 +95,14 @@ The medical knowledge assistant provides verified context for clinical terms wit
 - **Retrieval Performance:** Average query retrieval latency < 15ms locally.
 
 ### 4.3 LLM Grounding & Safety Constraints
-- **Model:** Google Gemini API (`gemini-1.5-flash`), with fallback compatibility for local Ollama instances.
+- **Model:** Groq API (`llama-3.3-70b-versatile` / `llama-3.1-8b-instant`), with fallback compatibility for local Ollama instances.
 - **Prompt Guardrails:** Instructs the LLM to:
   1. Base factual assertions strictly on retrieved text and cite sources by title/organization.
   2. Acknowledge insufficient context when questions fall outside cardiovascular scope.
   3. Prohibit clinical prescribing or personalized diagnostic affirmations.
   4. Never override or modify the numerical ML probability.
   5. Include educational and emergency warning disclaimers.
-- **Zero-Key Graceful Degradation:** If `GEMINI_API_KEY` is not provided, the assistant displays retrieved passages, similarity scores, and source links, accompanied by an explicit notice that natural-language synthesis requires API key configuration.
+- **Zero-Key Graceful Degradation:** If `GROQ_API_KEY` is not provided, the assistant displays retrieved passages, similarity scores, and source links, accompanied by an explicit notice that natural-language synthesis requires API key configuration.
 
 ---
 
@@ -203,7 +203,7 @@ tests/test_ml_and_rag.py::TestLLMGracefulFallback::test_format_context_with_pass
 - **Goyal Annayan (E23CSEU1937):**
   - FastAPI versioned route handlers and Pydantic validation schemas.
   - Medical knowledge base curation from WHO, CDC, AHA, and NIH.
-  - LLM integration with Google Gemini, prompt grounding, and fallback logic.
+  - LLM integration with Groq API, prompt grounding, and fallback logic.
   - Comprehensive pytest test suite construction and M4 documentation.
 
 ---

@@ -38,15 +38,15 @@ class Settings(BaseSettings):
     embedding_model: str = "all-MiniLM-L6-v2"
     top_k_retrieval: int = 5
 
-    # LLM
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-1.5-flash"
+    # LLM (Groq)
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
 
     @property
     def llm_available(self) -> bool:
-        return bool(self.gemini_api_key and self.gemini_api_key != "your_gemini_api_key_here")
+        return bool(self.groq_api_key and self.groq_api_key != "your_groq_api_key_here")
 
 
 settings = Settings()

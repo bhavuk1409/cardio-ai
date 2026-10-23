@@ -18,7 +18,7 @@ This repository contains a full-stack, locally runnable academic clinical decisi
 2. **Three-Model Benchmark**: Reproducible comparison between **Logistic Regression (M3 Baseline)**, **Random Forest (Champion)**, and **XGBoost**.
 3. **Model Explainability**: Game-theoretic feature attribution using **SHAP** (local patient explanations and global feature ranking).
 4. **Context-Aware Medical Retrieval (RAG)**: A vector search pipeline built with **sentence-transformers (`all-MiniLM-L6-v2`)** and **ChromaDB**, searching a curated corpus from WHO, CDC, AHA, and NIH.
-5. **Grounded Medical AI Assistant**: Natural language question-answering powered by **Google Gemini API** (with Ollama fallback), constrained to never hallucinate clinical recommendations or modify model predictions.
+5. **Grounded Medical AI Assistant**: Natural language question-answering powered by **Groq API** (Llama 3.3 / Llama 3.1, with Ollama fallback), constrained to never hallucinate clinical recommendations or modify model predictions.
 6. **Modern Clinical Dashboard**: A React 18, Vite, TypeScript, and Tailwind CSS web application designed with high aesthetic standards (light mode, accessible contrast, interactive Recharts visualizations).
 
 > **Important Educational Disclaimer:** This application is an educational prototype developed for academic demonstration purposes. It is **NOT** a clinically validated medical device, diagnostic tool, or a substitute for professional healthcare advice.
@@ -50,7 +50,7 @@ clinical-risk-prediction/
 │   │   ├── schemas/schemas.py   # Pydantic v2 validation models
 │   │   ├── services/            # Model singleton service
 │   │   ├── ml/                  # Dataset, preprocessing, EDA, training, SHAP
-│   │   ├── rag/                 # Knowledge base, chunking, ChromaDB, Gemini LLM
+│   │   ├── rag/                 # Knowledge base, chunking, ChromaDB, Groq LLM
 │   │   └── core/                # Configuration and logging
 │   ├── scripts/
 │   │   ├── train_models.py      # Automated training & chart generation script
@@ -92,7 +92,7 @@ clinical-risk-prediction/
 ### 4.1 Prerequisites
 - **Python**: 3.11 (tested on macOS Apple Silicon and Linux)
 - **Node.js**: v18+ or v20+ (tested on Node v22)
-- **Optional**: Google Gemini API key (for conversational chatbot generation)
+- **Optional**: Groq API key (for high-speed conversational chatbot generation via Llama 3.3 / Llama 3.1)
 
 ---
 
@@ -121,7 +121,7 @@ pip install -r requirements.txt
 ```bash
 cp ../.env.example ../.env
 ```
-*(Edit `../.env` to add your optional `GEMINI_API_KEY`. If left unset, the RAG search and passage citation engine will still function 100%).*
+*(Edit `../.env` to add your optional `GROQ_API_KEY`. If left unset, the RAG search and passage citation engine will still function 100%).*
 
 #### Step 4: Run Training & Build Vector Store
 ```bash

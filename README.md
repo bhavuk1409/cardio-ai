@@ -1,13 +1,26 @@
 # AI-Driven Clinical Risk Prediction & Context-Aware Medical Information Retrieval
 
 > **A Cardiovascular Risk Prediction Case Study using Machine Learning, Retrieval-Augmented Generation (RAG), SHAP, and Large Language Models.**  
-> Course Project: **CSET343** — Milestones 3 & 4
+> Course: **CSET343 — Artificial Intelligence and Machine Learning Applications** (Academic Session: 2024–2025)  
+> Comprehensive Milestones 1, 2, 3, 4 & 5 Project Submission  
 
 ---
 
 ## Team Members
 - **Bhavuk Agrawal** — `E23CSEU1938`
 - **Goyal Annayan** — `E23CSEU1937`
+
+---
+
+## Milestone Evaluation & Delivery Roadmap
+
+| Milestone | Rubric Focus Components | Evaluation Window | Documentation Deliverable |
+| :--- | :--- | :--- | :--- |
+| **Milestone 1** | Problem domain identification and analysis | **Sep 8 – Sep 11** | [`docs/M1_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M1_REPORT.md) |
+| **Milestone 2** | Review of existing systems, project feasibility, objectives & algorithmic relevance | **Sep 21 – Sep 25** | [`docs/M2_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M2_REPORT.md) |
+| **Milestone 3** | Synchronization of Project Design & Implementation (Data & Baseline Model) | **Oct 12 – Oct 16** | [`docs/M3_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M3_REPORT.md) |
+| **Milestone 4** | Implementation & Live Demonstration of Trained-Model Modules, SHAP & RAG | **Oct 26 – Oct 30** | [`docs/M4_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M4_REPORT.md) |
+| **Milestone 5** | Final Project Report / Research Paper, Format Compliance & Team Contributions | **Nov 16 – Nov 20** | [`docs/M5_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M5_REPORT.md) |
 
 ---
 

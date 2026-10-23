@@ -1,6 +1,7 @@
 # CSET343 — Milestone 2 Project Report
 ## Review of Existing Systems, Feasibility, Objectives, and Algorithmic Relevance
 
+**Institution:** Bennett University / School of Computer Science Engineering and Technology  
 **Course:** CSET343 — Artificial Intelligence and Machine Learning Applications  
 **Academic Session:** 2024–2025  
 **Evaluation Window:** September 21 – September 25  

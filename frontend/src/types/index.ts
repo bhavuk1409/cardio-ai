@@ -86,6 +86,7 @@ export interface KnowledgeSource {
   url: string;
   section: string;
   retrieved_date: string;
+  chunks_count?: number;
 }
 
 // Sample dataset records for demo

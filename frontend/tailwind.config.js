@@ -7,20 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-        },
-        teal: {
-          500: '#14b8a6',
-          600: '#0d9488',
-        },
+        darkbg: '#08090b',
+        darkbg2: '#0d0f13',
+        panel: '#101318',
+        cardline: 'rgba(255, 255, 255, 0.09)',
+        signalred: '#e10600',
+        signalcyan: '#35dfe6',
+        signalgreen: '#43d675',
+        signalamber: '#ffb200',
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        display: ['"Chakra Petch"', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'SFMono-Regular', 'monospace'],
+        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
       },
     },
   },

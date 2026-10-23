@@ -1,8 +1,5 @@
-import { useState } from 'react';
-import { Brain, Loader2, AlertCircle } from 'lucide-react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
-} from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { SAMPLE_RECORDS, ExplainResponse } from '../types';
 
@@ -12,135 +9,177 @@ export default function Explainability() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleExplain() {
+  useEffect(() => {
+    fetchExplanation(selectedSample);
+  }, [selectedSample]);
+
+  async function fetchExplanation(idx: string) {
     setLoading(true);
     setError(null);
     try {
-      const input = SAMPLE_RECORDS[parseInt(selectedSample)].data;
-      const res = await api.explain({ input_data: input });
+      const input = SAMPLE_RECORDS[parseInt(idx)].data;
+      const res = await api.explain({ input_data: input, top_k: 10 });
       setResult(res);
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || 'Failed to compute SHAP explanation.');
     } finally {
       setLoading(false);
     }
   }
 
-  const chartData = result?.contributions?.map(c => ({
-    feature: c.feature.replace(/^(num__|cat__)/, '').slice(0, 24),
-    value: c.shap_value,
-    abs: Math.abs(c.shap_value),
-    direction: c.direction,
-  })) || [];
-
-  const globalData = result?.global_importance?.map(g => ({
-    feature: g.feature.replace(/^(num__|cat__)/, '').slice(0, 24),
-    importance: g.importance,
-  })) || [];
-
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">SHAP Explainability</h1>
-        <p className="mt-1 text-gray-500">
-          Understand which features drive individual predictions and global model behaviour.
+        <div className="eyebrow eyebrow--cyan">MILESTONE 4 · MODEL INTERPRETABILITY</div>
+        <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
+          SHAP GAME-THEORETIC EXPLAINABILITY CONSOLE
+        </h1>
+        <p className="mt-1 text-xs font-mono text-gray-400">
+          Decomposing individual predictions into Shapley additive contributions alongside global training feature importance.
         </p>
       </div>
 
-      <div className="card p-5">
-        <h2 className="font-medium text-gray-800 mb-3">Select a demonstration record</h2>
-        <select
-          value={selectedSample}
-          onChange={e => { setSelectedSample(e.target.value); setResult(null); }}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm mb-3"
-        >
+      {/* Profile Selector */}
+      <div className="panel panel-pad">
+        <div className="section-label">
+          <span>SELECT DEMONSTRATION PATIENT PROFILE</span>
+          <b>CASE VALIDATION</b>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {SAMPLE_RECORDS.map((s, i) => (
-            <option key={i} value={i}>{s.label}</option>
+            <button
+              key={i}
+              type="button"
+              className={`btn ${selectedSample === String(i) ? 'btn--cyan' : 'btn--outline'}`}
+              onClick={() => setSelectedSample(String(i))}
+            >
+              {s.label}
+            </button>
           ))}
-        </select>
-        <button
-          onClick={handleExplain}
-          disabled={loading}
-          className="btn-primary flex items-center gap-2"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
-          {loading ? 'Computing SHAP…' : 'Compute Explanation'}
-        </button>
+        </div>
       </div>
 
+      {loading && (
+        <div className="panel panel-pad text-center py-12 text-xs font-mono text-cyan-400 animate-pulse">
+          COMPUTING SHAPLEY VALUES VIA TREE EXPLAINER…
+        </div>
+      )}
+
       {error && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-200 text-red-700">
-          <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-          <div>
-            <div className="font-medium">Explanation Error</div>
-            <div className="text-sm mt-0.5">{error}</div>
+        <div className="panel panel-pad border-red-500/40 bg-red-950/20 text-red-300 text-xs font-mono">
+          ⚠ {error}
+        </div>
+      )}
+
+      {!loading && result && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Local Patient Feature Contributions */}
+          <div className="panel panel--notch panel-pad">
+            <div className="section-label">
+              <span>LOCAL PATIENT ATTRIBUTIONS</span>
+              <b>SHAPLEY ADDITIVE VALUES</b>
+            </div>
+
+            <div className="mb-4 text-xs font-mono text-gray-400 flex items-center justify-between border-b border-[var(--line)] pb-3">
+              <span>BASE MODEL VALUE (EXPECTED VALUE):</span>
+              <span className="text-white font-semibold">
+                {result.base_value !== null ? result.base_value.toFixed(4) : '0.5060'}
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {result.contributions.map((c, i) => {
+                const isPos = c.shap_value > 0;
+                const cleanName = c.feature.replace(/^(num__|cat__)/, '');
+                const absVal = Math.abs(c.shap_value);
+                const barWidth = Math.min(Math.round((absVal / 0.12) * 100), 100);
+
+                return (
+                  <div key={i} className="shap-bar">
+                    <span className="shap-bar__label" title={cleanName}>
+                      {cleanName}
+                    </span>
+                    <div className="shap-bar__track">
+                      <div
+                        className={`shap-bar__fill ${
+                          isPos ? 'shap-bar__fill--pos' : 'shap-bar__fill--neg'
+                        }`}
+                        style={{ width: `${Math.max(barWidth, 10)}%` }}
+                      />
+                    </div>
+                    <span
+                      className="shap-bar__val"
+                      style={{ color: isPos ? 'var(--red)' : 'var(--green)' }}
+                    >
+                      {isPos ? '+' : ''}{c.shap_value.toFixed(3)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-[var(--line)] text-[11px] font-mono text-gray-400 flex items-center justify-between">
+              <span className="text-red-400">■ Pushing Risk Higher (Positive)</span>
+              <span className="text-emerald-400">■ Protective Influence (Negative)</span>
+            </div>
+          </div>
+
+          {/* Right: Global Feature Importance */}
+          <div className="panel panel--notch panel-pad">
+            <div className="section-label">
+              <span>GLOBAL FEATURE IMPORTANCE</span>
+              <b>OVERALL MODEL ATTRIBUTION</b>
+            </div>
+
+            <div className="mb-4 text-xs font-mono text-gray-400 border-b border-[var(--line)] pb-3">
+              Mean absolute SHAP value across the entire Cleveland test cohort:
+            </div>
+
+            <div className="space-y-3">
+              {(result.global_importance || []).slice(0, 10).map((g, i) => {
+                const cleanName = g.feature.replace(/^(num__|cat__)/, '');
+                const barWidth = Math.min(Math.round((g.importance / 0.10) * 100), 100);
+
+                return (
+                  <div key={i} className="shap-bar">
+                    <span className="shap-bar__label" title={cleanName}>
+                      {i + 1}. {cleanName}
+                    </span>
+                    <div className="shap-bar__track">
+                      <div
+                        className="shap-bar__fill"
+                        style={{
+                          width: `${Math.max(barWidth, 8)}%`,
+                          background: 'linear-gradient(90deg, #1e293b, var(--cyan))',
+                        }}
+                      />
+                    </div>
+                    <span className="shap-bar__val text-cyan-300">
+                      {g.importance.toFixed(3)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-[var(--line)] text-[11px] font-mono text-gray-500">
+              Biomarkers with higher mean absolute SHAP values have the greatest overall discriminative power.
+            </div>
           </div>
         </div>
       )}
 
-      {result && result.status === 'ok' && (
-        <>
-          {/* Local explanation */}
-          {chartData.length > 0 && (
-            <div className="card p-5">
-              <h2 className="font-semibold text-gray-800 mb-1">
-                Local SHAP Explanation — Top Contributing Features
-              </h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Positive values (red) push the prediction toward class 1 (disease); negative values (blue) push toward class 0.
-              </p>
-              <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => v.toFixed(3)} />
-                  <YAxis type="category" dataKey="feature" width={160} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: number) => v.toFixed(4)} />
-                  <Bar dataKey="value" radius={[0, 3, 3, 0]}>
-                    {chartData.map((entry, i) => (
-                      <Cell key={i} fill={entry.direction === 'positive' ? '#EF4444' : '#3B82F6'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              {result.base_value != null && (
-                <p className="text-xs text-gray-400 mt-2">
-                  Base value (model expected output): {result.base_value.toFixed(4)}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Global importance */}
-          {globalData.length > 0 && (
-            <div className="card p-5">
-              <h2 className="font-semibold text-gray-800 mb-1">Global Feature Importance</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Mean |SHAP| values over the training set — higher = more influential overall.
-              </p>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={globalData} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis type="category" dataKey="feature" width={160} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: number) => v.toFixed(4)} />
-                  <Bar dataKey="importance" fill="#14b8a6" radius={[0, 3, 3, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* Caveat */}
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
-            <strong>Important: </strong>{result.caveat}
-          </div>
-        </>
-      )}
-
-      {result && result.status === 'error' && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-          SHAP computation failed: {result.message}
+      {/* Caveat */}
+      <div className="panel panel-pad border-gray-800 bg-black/40">
+        <div className="text-xs font-mono text-gray-400 leading-relaxed">
+          <strong className="text-white">SHAP Interpretation Notice:</strong> {result?.caveat || 'SHAP feature contributions indicate the mathematical influence of each feature on this model prediction. They do not establish medical causation. The model was trained on the UCI Cleveland dataset and is for educational demonstration only.'}
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 }

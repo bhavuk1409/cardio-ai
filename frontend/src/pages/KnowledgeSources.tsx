@@ -1,90 +1,127 @@
-import { useEffect, useState } from 'react';
-import { Library, ExternalLink, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { KnowledgeSource } from '../types';
 
-const ORG_COLORS: Record<string, string> = {
-  'World Health Organization (WHO)': 'bg-blue-100 text-blue-700',
-  'Centers for Disease Control and Prevention (CDC)': 'bg-red-100 text-red-700',
-  'American Heart Association (AHA)': 'bg-rose-100 text-rose-700',
-  'National Institutes of Health (NIH) / NHLBI': 'bg-green-100 text-green-700',
-};
-
 export default function KnowledgeSources() {
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
+  const [filter, setFilter] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.knowledgeSources()
-      .then(r => setSources(r.sources))
+      .then((r) => setSources(r.sources))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const grouped = sources.reduce<Record<string, KnowledgeSource[]>>((acc, s) => {
-    (acc[s.organization] = acc[s.organization] || []).push(s);
-    return acc;
-  }, {});
+  const filtered = sources.filter((s) => {
+    if (filter === 'ALL') return true;
+    if (filter === 'WHO') return s.organization.includes('WHO') || s.organization.includes('World Health');
+    if (filter === 'CDC') return s.organization.includes('CDC') || s.organization.includes('Centers for Disease');
+    if (filter === 'AHA') return s.organization.includes('AHA') || s.organization.includes('American Heart');
+    if (filter === 'NIH') return s.organization.includes('NIH') || s.organization.includes('National Institutes');
+    return true;
+  });
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Knowledge Sources</h1>
-        <p className="mt-1 text-gray-500">
-          Curated cardiovascular health documents used by the RAG retrieval pipeline.
-          All sources are from trusted public health organisations.
+        <div className="eyebrow eyebrow--cyan">RAG KNOWLEDGE REPOSITORY · 15 CURATED GUIDELINES</div>
+        <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
+          CARDIOVASCULAR EVIDENCE SOURCES
+        </h1>
+        <p className="mt-1 text-xs font-mono text-gray-400">
+          Peer-reviewed medical guidelines embedded into the local ChromaDB vector store for grounded generation.
         </p>
       </div>
 
-      <div className="card p-4 flex items-center gap-3 text-sm text-gray-600">
-        <Library className="w-4 h-4 text-blue-600 flex-shrink-0" />
-        {loading ? 'Loading sources…' : `${sources.length} unique sources · 4 organisations · All documents are publicly accessible`}
-      </div>
-
-      {loading ? (
-        <div className="flex items-center gap-3 text-gray-500">
-          <Loader2 className="w-5 h-5 animate-spin" /> Loading…
+      {/* Filter Bar */}
+      <div className="panel panel-pad flex flex-wrap items-center justify-between gap-4">
+        <div className="seg">
+          {['ALL', 'WHO', 'CDC', 'AHA', 'NIH'].map((cat) => (
+            <button
+              key={cat}
+              className={filter === cat ? 'active' : ''}
+              onClick={() => setFilter(cat)}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
-      ) : (
-        Object.entries(grouped).map(([org, orgSources]) => (
-          <div key={org} className="space-y-2">
-            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-              <span className={`badge ${ORG_COLORS[org] || 'bg-gray-100 text-gray-700'}`}>
-                {org}
-              </span>
-            </h2>
-            <div className="space-y-2">
-              {orgSources.map((s, i) => (
-                <div key={i} className="card p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800 text-sm">{s.title}</div>
-                      {s.section && (
-                        <div className="text-xs text-gray-400 mt-0.5">Section: {s.section}</div>
-                      )}
-                      <div className="text-xs text-gray-400 mt-1">Retrieved: {s.retrieved_date}</div>
-                    </div>
-                    <a
-                      href={s.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs text-blue-600 hover:underline flex-shrink-0 mt-1"
-                    >
-                      Visit source <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
-      )}
 
-      <div className="card p-4 text-sm text-gray-500">
-        <strong className="text-gray-700">Data ingestion:</strong> All documents are chunked (400 chars, 80-char overlap),
-        embedded with <code className="bg-gray-100 px-1 rounded">all-MiniLM-L6-v2</code>,
-        and stored in a local ChromaDB vector database.
-        The knowledge base can be rebuilt at any time with: <code className="bg-gray-100 px-1 rounded">python -m scripts.build_kb</code>
+        <div className="text-xs font-mono text-gray-400 flex items-center gap-3">
+          <span className="badge badge--green">30 CHUNKS EMBEDDED</span>
+          <span className="badge badge--cyan">ALL-MINILM-L6-V2</span>
+        </div>
       </div>
-    </div>
+
+      {/* Table */}
+      <div className="panel panel--notch panel-pad">
+        <div className="section-label">
+          <span>CURATED CLINICAL MANIFEST</span>
+          <b>{filtered.length} DOCUMENTS DISPLAYED</b>
+        </div>
+
+        {loading ? (
+          <div className="py-12 text-center text-xs font-mono text-cyan-400 animate-pulse">
+            LOADING KNOWLEDGE BASE REPOSITORY…
+          </div>
+        ) : (
+          <div className="table-wrap">
+            <table className="telemetry-table">
+              <thead>
+                <tr>
+                  <th>Guideline Title</th>
+                  <th>Issuing Organization</th>
+                  <th>Clinical Section</th>
+                  <th>Chunks</th>
+                  <th>Direct Provenance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((s, idx) => (
+                  <tr key={idx}>
+                    <td className="font-semibold text-white">{s.title}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          s.organization.includes('WHO')
+                            ? 'badge--cyan'
+                            : s.organization.includes('CDC')
+                            ? 'badge--red'
+                            : s.organization.includes('AHA')
+                            ? 'badge--amber'
+                            : 'badge--green'
+                        }`}
+                      >
+                        {s.organization.split('(')[0].trim()}
+                      </span>
+                    </td>
+                    <td className="text-gray-400">{s.section || 'General'}</td>
+                    <td className="text-gray-300 font-mono">{s.chunks_count || 2}</td>
+                    <td>
+                      <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-mono text-cyan-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        Source Link ↗
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

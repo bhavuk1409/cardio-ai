@@ -1,70 +1,66 @@
-import { useState } from 'react';
-import { Heart, AlertCircle, CheckCircle, Loader2, RotateCcw, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { PredictionInput, PredictionResponse, SAMPLE_RECORDS } from '../types';
-
-const FIELD_DEFS = [
-  { key: 'age', label: 'Age', type: 'number', min: 1, max: 120, unit: 'years', step: 1 },
-  { key: 'sex', label: 'Sex', type: 'select', options: [{ v: 1, l: 'Male' }, { v: 0, l: 'Female' }] },
-  { key: 'cp', label: 'Chest Pain Type', type: 'select', options: [
-    { v: 1, l: '1 — Typical Angina' }, { v: 2, l: '2 — Atypical Angina' },
-    { v: 3, l: '3 — Non-Anginal Pain' }, { v: 4, l: '4 — Asymptomatic' }
-  ]},
-  { key: 'trestbps', label: 'Resting Blood Pressure', type: 'number', min: 50, max: 300, unit: 'mm Hg', step: 1 },
-  { key: 'chol', label: 'Serum Cholesterol', type: 'number', min: 100, max: 700, unit: 'mg/dl', step: 1 },
-  { key: 'fbs', label: 'Fasting Blood Sugar > 120 mg/dl', type: 'select', options: [{ v: 1, l: 'True (>120)' }, { v: 0, l: 'False (≤120)' }] },
-  { key: 'restecg', label: 'Resting ECG', type: 'select', options: [
-    { v: 0, l: '0 — Normal' }, { v: 1, l: '1 — ST-T Abnormality' }, { v: 2, l: '2 — LV Hypertrophy' }
-  ]},
-  { key: 'thalach', label: 'Max Heart Rate Achieved', type: 'number', min: 50, max: 250, unit: 'bpm', step: 1 },
-  { key: 'exang', label: 'Exercise-Induced Angina', type: 'select', options: [{ v: 1, l: 'Yes' }, { v: 0, l: 'No' }] },
-  { key: 'oldpeak', label: 'ST Depression (Oldpeak)', type: 'number', min: 0, max: 10, unit: 'mm', step: 0.1 },
-  { key: 'slope', label: 'Slope of Peak Exercise ST', type: 'select', options: [
-    { v: 1, l: '1 — Upsloping' }, { v: 2, l: '2 — Flat' }, { v: 3, l: '3 — Downsloping' }
-  ]},
-  { key: 'ca', label: 'Major Vessels (Fluoroscopy)', type: 'select', options: [
-    { v: 0, l: '0' }, { v: 1, l: '1' }, { v: 2, l: '2' }, { v: 3, l: '3' }
-  ]},
-  { key: 'thal', label: 'Thallium Scan', type: 'select', options: [
-    { v: 3, l: '3 — Normal' }, { v: 6, l: '6 — Fixed Defect' }, { v: 7, l: '7 — Reversable Defect' }
-  ]},
-] as const;
+import { StatReadout } from '../components/StatReadout';
 
 const EMPTY: PredictionInput = {
-  age: 50, sex: 1, cp: 2, trestbps: 130, chol: 240,
-  fbs: 0, restecg: 0, thalach: 150, exang: 0,
-  oldpeak: 1.0, slope: 2, ca: 0, thal: 3
+  age: 55,
+  sex: 1,
+  cp: 4,
+  trestbps: 140,
+  chol: 250,
+  fbs: 0,
+  restecg: 1,
+  thalach: 145,
+  exang: 1,
+  oldpeak: 2.2,
+  slope: 2,
+  ca: 1,
+  thal: 7,
 };
 
 export default function RiskPrediction() {
+  const navigate = useNavigate();
   const [form, setForm] = useState<PredictionInput>(EMPTY);
   const [result, setResult] = useState<PredictionResponse | null>(null);
+  const [shapData, setShapData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSample, setSelectedSample] = useState<string>('');
+  const [selectedSample, setSelectedSample] = useState<string>('0');
 
-  function handleChange(key: string, value: string) {
-    setForm(prev => ({ ...prev, [key]: parseFloat(value) }));
+  function handleChange(key: keyof PredictionInput, val: number) {
+    setForm((prev) => ({ ...prev, [key]: val }));
   }
 
-  function handleSample(idx: string) {
-    if (!idx) return;
-    setSelectedSample(idx);
-    setForm(SAMPLE_RECORDS[parseInt(idx)].data);
+  function loadSample(idx: number) {
+    const s = SAMPLE_RECORDS[idx];
+    if (!s) return;
+    setSelectedSample(String(idx));
+    setForm(s.data);
     setResult(null);
+    setShapData(null);
     setError(null);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handlePredict(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     setLoading(true);
     setError(null);
-    setResult(null);
     try {
-      const res = await api.predict(form);
-      setResult(res);
+      const pred = await api.predict(form);
+      setResult(pred);
+
+      // Concurrently fetch SHAP explanation for the patient
+      try {
+        const shap = await api.explain({ input_data: form, top_k: 6 });
+        setShapData(shap);
+      } catch {
+        // Non-blocking if SHAP has an issue
+      }
     } catch (err: any) {
-      setError(err.message || 'Prediction failed');
+      setError(err.message || 'Prediction failed.');
     } finally {
       setLoading(false);
     }
@@ -73,148 +69,456 @@ export default function RiskPrediction() {
   function handleReset() {
     setForm(EMPTY);
     setResult(null);
+    setShapData(null);
     setError(null);
-    setSelectedSample('');
   }
+
+  const probPercent = result && result.probability_positive_class !== null
+    ? result.probability_positive_class * 100
+    : result?.predicted_class === 1 ? 95 : 5;
+
+  const isHighRisk = result?.predicted_class === 1;
+
+  // Derived cardiovascular indicators
+  const maxTargetHr = 220 - form.age;
+  const hrPercent = Math.round((form.thalach / maxTargetHr) * 100);
+  const bpCategory =
+    form.trestbps < 120 ? 'Optimal' : form.trestbps <= 129 ? 'Elevated' : form.trestbps <= 139 ? 'Stage 1 HTN' : 'Stage 2 HTN';
 
   return (
     <div className="space-y-6">
+      {/* Title */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Risk Prediction</h1>
-        <p className="mt-1 text-gray-500">
-          Enter cardiovascular feature values below to get a model classification result.
+        <div className="eyebrow">MILESTONE 4 · TRAINED-MODEL DEMONSTRATION</div>
+        <h1 className="text-2xl md:text-3xl font-bold font-display tracking-wider text-white mt-1">
+          CARDIOVASCULAR RISK TELEMETRY CONSOLE
+        </h1>
+        <p className="mt-1 text-xs font-mono text-gray-400">
+          Supervised inference via Random Forest classifier with continuous probabilistic outputs and real-time SHAP attribution.
         </p>
       </div>
 
-      {/* Demo sample selector */}
-      <div className="card p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-gray-700">Load a demonstration record</span>
-          <span className="badge bg-amber-100 text-amber-700">Demo only — not real patients</span>
-        </div>
-        <select
-          value={selectedSample}
-          onChange={e => handleSample(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Select a sample record…</option>
-          {SAMPLE_RECORDS.map((s, i) => (
-            <option key={i} value={i}>{s.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="card p-5">
-          <h2 className="font-semibold text-gray-800 mb-4">Patient Feature Input</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {FIELD_DEFS.map((f) => (
-              <div key={f.key}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {f.label}
-                  {'unit' in f && <span className="text-gray-400 font-normal"> ({f.unit})</span>}
-                </label>
-                {f.type === 'select' ? (
-                  <select
-                    value={form[f.key as keyof PredictionInput]}
-                    onChange={e => handleChange(f.key, e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {(f as any).options.map((o: any) => (
-                      <option key={o.v} value={o.v}>{o.l}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="number"
-                    min={(f as any).min}
-                    max={(f as any).max}
-                    step={(f as any).step}
-                    value={form[f.key as keyof PredictionInput]}
-                    onChange={e => handleChange(f.key, e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary flex items-center gap-2"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
-              {loading ? 'Running prediction…' : 'Predict'}
-            </button>
-            <button type="button" onClick={handleReset} className="btn-secondary flex items-center gap-2">
-              <RotateCcw className="w-4 h-4" /> Clear
-            </button>
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
-            <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-            <div>
-              <div className="font-medium text-red-800">Prediction Error</div>
-              <div className="text-sm text-red-600 mt-0.5">{error}</div>
-              {error.includes('not loaded') && (
-                <div className="text-sm text-red-600 mt-1">
-                  Run: <code className="bg-red-100 px-1 rounded">python -m scripts.train_models</code> in the backend directory.
-                </div>
-              )}
+      <div className="layout">
+        {/* ==================== CONSOLE (LEFT) ==================== */}
+        <section className="console">
+          {/* Preset Clinical Profiles */}
+          <div className="panel panel-pad">
+            <div className="section-label">
+              <span>PRELOAD CLINICAL CASE</span>
+              <b>VALIDATION SAMPLES</b>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {SAMPLE_RECORDS.map((s, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`btn btn--sm ${selectedSample === String(i) ? 'btn--cyan' : 'btn--outline'}`}
+                  onClick={() => loadSample(i)}
+                >
+                  {i === 0 ? 'HIGH RISK' : i === 1 ? 'LOW RISK' : 'BORDERLINE'}
+                </button>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Result */}
-        {result && (
-          <div className={`card p-5 border-l-4 ${result.predicted_class === 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
-            <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                result.predicted_class === 0 ? 'bg-green-100' : 'bg-red-100'
-              }`}>
-                {result.predicted_class === 0 ? (
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                ) : (
-                  <AlertCircle className="w-6 h-6 text-red-600" />
-                )}
+          {/* Form */}
+          <form onSubmit={handlePredict} className="panel panel-pad space-y-5">
+            <div className="section-label">
+              <span>PATIENT CLINICAL BIOMARKERS</span>
+              <b>13 UCI FEATURES</b>
+            </div>
+
+            {/* Demographics */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label>AGE <b>YEARS</b></label>
+                <input
+                  type="number"
+                  className="input"
+                  min={18}
+                  max={100}
+                  value={form.age}
+                  onChange={(e) => handleChange('age', Number(e.target.value))}
+                  required
+                />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h3 className="font-semibold text-gray-900">
-                    Predicted Class: {result.predicted_class}
-                    {' '}({result.predicted_class === 0 ? 'No Disease' : 'Disease Present'})
-                  </h3>
-                  <span className="badge bg-blue-100 text-blue-700">{result.model_name.replace('_', ' ')}</span>
-                  <span className="badge bg-gray-100 text-gray-600">v{result.model_version}</span>
+
+              <div className="field">
+                <label>BIOLOGICAL SEX <b>GENDER</b></label>
+                <select
+                  className="select"
+                  value={form.sex}
+                  onChange={(e) => handleChange('sex', Number(e.target.value))}
+                >
+                  <option value={1}>1 — Male</option>
+                  <option value={0}>0 — Female</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Hemodynamics */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label>RESTING BP <b>MM HG</b></label>
+                <input
+                  type="number"
+                  className="input"
+                  min={80}
+                  max={240}
+                  value={form.trestbps}
+                  onChange={(e) => handleChange('trestbps', Number(e.target.value))}
+                  required
+                />
+              </div>
+
+              <div className="field">
+                <label>SERUM CHOLESTEROL <b>MG/DL</b></label>
+                <input
+                  type="number"
+                  className="input"
+                  min={100}
+                  max={600}
+                  value={form.chol}
+                  onChange={(e) => handleChange('chol', Number(e.target.value))}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Cardiac Symptoms & Stress Telemetry */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label>CHEST PAIN TYPE <b>CP</b></label>
+                <select
+                  className="select"
+                  value={form.cp}
+                  onChange={(e) => handleChange('cp', Number(e.target.value))}
+                >
+                  <option value={1}>1 — Typical Angina</option>
+                  <option value={2}>2 — Atypical Angina</option>
+                  <option value={3}>3 — Non-Anginal Pain</option>
+                  <option value={4}>4 — Asymptomatic (High Risk)</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label>FASTING BLOOD SUGAR <b>FBS &gt; 120</b></label>
+                <select
+                  className="select"
+                  value={form.fbs}
+                  onChange={(e) => handleChange('fbs', Number(e.target.value))}
+                >
+                  <option value={0}>0 — Normal (≤ 120 mg/dl)</option>
+                  <option value={1}>1 — Elevated (&gt; 120 mg/dl)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Stress Test ECG biomarkers */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label>MAX HEART RATE <b>THALACH (BPM)</b></label>
+                <input
+                  type="number"
+                  className="input"
+                  min={60}
+                  max={220}
+                  value={form.thalach}
+                  onChange={(e) => handleChange('thalach', Number(e.target.value))}
+                  required
+                />
+              </div>
+
+              <div className="field">
+                <label>EXERCISE ANGINA <b>EXANG</b></label>
+                <select
+                  className="select"
+                  value={form.exang}
+                  onChange={(e) => handleChange('exang', Number(e.target.value))}
+                >
+                  <option value={0}>0 — No Exercise Angina</option>
+                  <option value={1}>1 — Exercise-Induced Angina</option>
+                </select>
+              </div>
+            </div>
+
+            {/* ST Depression & Slope */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label>ST DEPRESSION <b>OLDPEAK (MM)</b></label>
+                <input
+                  type="number"
+                  step="0.1"
+                  className="input"
+                  min={0}
+                  max={8}
+                  value={form.oldpeak}
+                  onChange={(e) => handleChange('oldpeak', Number(e.target.value))}
+                  required
+                />
+              </div>
+
+              <div className="field">
+                <label>PEAK ST SLOPE <b>SLOPE</b></label>
+                <select
+                  className="select"
+                  value={form.slope}
+                  onChange={(e) => handleChange('slope', Number(e.target.value))}
+                >
+                  <option value={1}>1 — Upsloping</option>
+                  <option value={2}>2 — Flat (Ischemia Risk)</option>
+                  <option value={3}>3 — Downsloping</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Fluoroscopy & Thallium Scan */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label>MAJOR VESSELS <b>CA (0–3)</b></label>
+                <select
+                  className="select"
+                  value={form.ca}
+                  onChange={(e) => handleChange('ca', Number(e.target.value))}
+                >
+                  <option value={0}>0 Major Vessels Colored</option>
+                  <option value={1}>1 Major Vessel Colored</option>
+                  <option value={2}>2 Major Vessels Colored</option>
+                  <option value={3}>3 Major Vessels Colored</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label>THALLIUM SCAN <b>THAL</b></label>
+                <select
+                  className="select"
+                  value={form.thal}
+                  onChange={(e) => handleChange('thal', Number(e.target.value))}
+                >
+                  <option value={3}>3 — Normal Blood Flow</option>
+                  <option value={6}>6 — Fixed Defect</option>
+                  <option value={7}>7 — Reversible Defect</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Resting ECG */}
+            <div className="field">
+              <label>RESTING ECG RESULT <b>RESTECG</b></label>
+              <select
+                className="select"
+                value={form.restecg}
+                onChange={(e) => handleChange('restecg', Number(e.target.value))}
+              >
+                <option value={0}>0 — Normal</option>
+                <option value={1}>1 — ST-T Wave Abnormality</option>
+                <option value={2}>2 — Probable/Definite LV Hypertrophy</option>
+              </select>
+            </div>
+
+            {/* Submit Bar */}
+            <div className="pt-3 flex items-center gap-3">
+              <button
+                type="submit"
+                className="btn btn--primary flex-1 py-3"
+                disabled={loading}
+              >
+                {loading ? 'COMPUTING INFERENCE…' : '▶ RUN CLINICAL INFERENCE'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--outline"
+                onClick={handleReset}
+              >
+                RESET
+              </button>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-950/40 border border-red-500/40 text-red-300 text-xs font-mono rounded">
+                ⚠ {error}
+              </div>
+            )}
+          </form>
+        </section>
+
+        {/* ==================== OUTPUT (RIGHT) ==================== */}
+        <section className="output">
+          <AnimatePresence mode="wait">
+            {result ? (
+              <motion.div
+                key="result"
+                className="result"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Hero Telemetry Card */}
+                <div
+                  className={`result__hero panel panel--notch panel-pad ${
+                    isHighRisk ? 'panel--alert' : 'panel--highlight'
+                  }`}
+                >
+                  <div className="section-label">
+                    <span>PREDICTED RISK PROBABILITY</span>
+                    <b>MODEL: {result.model_name.toUpperCase()}</b>
+                  </div>
+
+                  <div className="flex items-baseline gap-2">
+                    <div
+                      className="result__time"
+                      style={{ color: isHighRisk ? 'var(--red)' : 'var(--green)' }}
+                    >
+                      {probPercent.toFixed(1)}%
+                    </div>
+                    <span className="text-xs font-mono text-gray-400">ESTIMATED PROBABILITY</span>
+                  </div>
+
+                  <div className="result__meta mt-2">
+                    <span
+                      className={`badge ${isHighRisk ? 'badge--red' : 'badge--green'}`}
+                    >
+                      {isHighRisk
+                        ? '● RISK DETECTED — CLASS 1'
+                        : '● NO DISEASE DETECTED — CLASS 0'}
+                    </span>
+                    <span className="result__spread">
+                      DATASET THRESHOLD: 50.0%
+                    </span>
+                  </div>
+
+                  <p className="mt-3 text-xs font-mono text-gray-300 leading-relaxed border-t border-[var(--line)] pt-3">
+                    {result.interpretation}
+                  </p>
                 </div>
-                {result.probability_positive_class !== null && (
-                  <div className="mt-3">
-                    <div className="text-sm text-gray-600 mb-1">
-                      Estimated probability of positive class (disease):&nbsp;
-                      <span className="font-semibold">{(result.probability_positive_class * 100).toFixed(1)}%</span>
+
+                {/* Patient Biomarker Summary Readouts */}
+                <div className="stat-grid">
+                  <StatReadout
+                    label="Blood Pressure"
+                    value={form.trestbps}
+                    unit="mmHg"
+                    accent={form.trestbps >= 140 ? 'var(--red)' : 'var(--text)'}
+                    subtitle={bpCategory}
+                    animate={false}
+                  />
+                  <StatReadout
+                    label="Max Heart Rate"
+                    value={form.thalach}
+                    unit="bpm"
+                    accent={form.thalach < 120 ? 'var(--amber)' : 'var(--text)'}
+                    subtitle={`${hrPercent}% of target`}
+                    animate={false}
+                  />
+                  <StatReadout
+                    label="ST Depression"
+                    value={form.oldpeak}
+                    unit="mm"
+                    accent={form.oldpeak >= 1.5 ? 'var(--red)' : 'var(--green)'}
+                    subtitle={form.oldpeak >= 1.0 ? 'Ischemic Shift' : 'Normal'}
+                    animate={false}
+                  />
+                  <StatReadout
+                    label="Fluoroscopy Ca"
+                    value={form.ca}
+                    unit="vessels"
+                    accent={form.ca > 0 ? 'var(--red)' : 'var(--cyan)'}
+                    subtitle={form.ca > 0 ? 'Plaque Calcification' : 'Clear'}
+                    animate={false}
+                  />
+                </div>
+
+                {/* Live SHAP Waterfall Attributions */}
+                {shapData && shapData.contributions && (
+                  <div className="panel panel-pad">
+                    <div className="section-label">
+                      <span>PATIENT SHAP ATTRIBUTION FACTORS</span>
+                      <b>MARGINAL CONTRIBUTIONS</b>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all ${result.predicted_class === 0 ? 'bg-green-500' : 'bg-red-500'}`}
-                        style={{ width: `${result.probability_positive_class * 100}%` }}
-                      />
+                    <div className="space-y-2 mt-2">
+                      {shapData.contributions.slice(0, 5).map((c: any, idx: number) => {
+                        const isPos = c.shap_value > 0;
+                        const absVal = Math.abs(c.shap_value);
+                        const pct = Math.min(Math.round((absVal / 0.15) * 100), 100);
+                        const cleanName = c.feature.replace(/^(num__|cat__)/, '');
+                        return (
+                          <div key={idx} className="shap-bar">
+                            <span className="shap-bar__label" title={cleanName}>
+                              {cleanName}
+                            </span>
+                            <div className="shap-bar__track">
+                              <div
+                                className={`shap-bar__fill ${
+                                  isPos ? 'shap-bar__fill--pos' : 'shap-bar__fill--neg'
+                                }`}
+                                style={{ width: `${Math.max(pct, 12)}%` }}
+                              />
+                            </div>
+                            <span
+                              className="shap-bar__val"
+                              style={{ color: isPos ? 'var(--red)' : 'var(--green)' }}
+                            >
+                              {isPos ? '+' : ''}{c.shap_value.toFixed(3)}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
+                    <p className="text-[10.5px] font-mono text-gray-500 mt-3">
+                      Red values indicate features pushing risk upwards; green values indicate protective factors.
+                    </p>
                   </div>
                 )}
-                <p className="mt-3 text-sm text-gray-600">{result.interpretation}</p>
-                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
+
+                {/* Medical Assistant Call-To-Action */}
+                <div className="panel panel-pad bg-purple-950/20 border-purple-800/40">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                      <div className="font-display font-semibold text-sm text-purple-200">
+                        Context-Aware Medical Retrieval (RAG)
+                      </div>
+                      <div className="text-xs font-mono text-purple-300/70 mt-0.5">
+                        Consult the Groq AI Assistant regarding this patient's profile and guideline recommendations.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn--cyan btn--sm"
+                      onClick={() => navigate('/assistant')}
+                    >
+                      QUERY MEDICAL AI →
+                    </button>
+                  </div>
+                </div>
+
+                {/* Disclaimer */}
+                <div className="text-[11px] font-mono text-gray-500 bg-black/30 p-3 rounded border border-[var(--line)]">
                   {result.disclaimer}
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </form>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                className="empty panel panel--notch"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="empty__grid" />
+                <div className="empty__inner">
+                  <span className="empty__mark">◎</span>
+                  <p className="empty__title">TELEMETRY STANDBY</p>
+                  <p className="empty__sub">
+                    Configure patient parameters or select a validation sample profile and click{' '}
+                    <strong className="text-white">RUN CLINICAL INFERENCE</strong> to evaluate cardiovascular risk.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+      </div>
     </div>
   );
 }

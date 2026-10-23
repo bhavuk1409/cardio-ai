@@ -216,7 +216,13 @@ export default function MedicalAssistant() {
             className="btn btn--primary py-2.5 px-5 font-mono"
             disabled={loading || !query.trim()}
           >
-            {loading ? 'TRANSMITTING…' : '▶ TRANSMIT'}
+            {loading ? (
+              <>
+                <span className="spinner" /> TRANSMITTING…
+              </>
+            ) : (
+              <>▶ TRANSMIT</>
+            )}
           </button>
         </form>
       </div>

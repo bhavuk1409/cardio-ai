@@ -100,7 +100,13 @@ export default function Explainability() {
                 const barWidth = Math.min(Math.round((absVal / 0.12) * 100), 100);
 
                 return (
-                  <div key={i} className="shap-bar">
+                  <motion.div
+                    key={i}
+                    className="shap-bar"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                  >
                     <span className="shap-bar__label" title={cleanName}>
                       {cleanName}
                     </span>
@@ -118,7 +124,7 @@ export default function Explainability() {
                     >
                       {isPos ? '+' : ''}{c.shap_value.toFixed(3)}
                     </span>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -146,7 +152,13 @@ export default function Explainability() {
                 const barWidth = Math.min(Math.round((g.importance / 0.10) * 100), 100);
 
                 return (
-                  <div key={i} className="shap-bar">
+                  <motion.div
+                    key={i}
+                    className="shap-bar"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
+                  >
                     <span className="shap-bar__label" title={cleanName}>
                       {i + 1}. {cleanName}
                     </span>
@@ -162,7 +174,7 @@ export default function Explainability() {
                     <span className="shap-bar__val text-cyan-300">
                       {g.importance.toFixed(3)}
                     </span>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

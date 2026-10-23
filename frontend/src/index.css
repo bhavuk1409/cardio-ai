@@ -482,6 +482,8 @@ button {
   width: 44px;
   height: 44px;
   filter: drop-shadow(0 0 14px rgba(225, 6, 0, 0.45));
+  animation: cardiacPulse 2.8s ease-in-out infinite;
+  transform-origin: center;
 }
 .masthead__title {
   font-family: var(--font-display);
@@ -689,6 +691,8 @@ button {
 }
 .shap-bar__fill {
   height: 100%;
+  transform-origin: left;
+  animation: barGrowHoriz 0.5s var(--ease) backwards;
   transition: width 0.6s var(--ease);
 }
 .shap-bar__fill--pos {
@@ -736,6 +740,39 @@ button {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #1c2027; border-radius: 4px; border: 2px solid var(--bg); }
 ::-webkit-scrollbar-thumb:hover { background: #2a303a; }
+
+/* ---------- Keyframe Animations ---------- */
+@keyframes cardiacPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(225, 6, 0, 0.45)); }
+  14% { transform: scale(1.08); filter: drop-shadow(0 0 20px rgba(225, 6, 0, 0.75)); }
+  28% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(225, 6, 0, 0.45)); }
+  42% { transform: scale(1.05); filter: drop-shadow(0 0 16px rgba(225, 6, 0, 0.6)); }
+  60% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(225, 6, 0, 0.45)); }
+}
+
+@keyframes barGrowHoriz {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }

@@ -102,7 +102,12 @@ export default function ModelPerformance() {
 
         <div className="space-y-3">
           {/* Row 1: Random Forest */}
-          <div className="p-4 bg-emerald-950/20 border border-emerald-500/50 rounded flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: -14 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+            className="p-4 bg-emerald-950/20 border border-emerald-500/50 rounded flex flex-col md:flex-row md:items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-4">
               <span className="font-display font-bold text-2xl text-emerald-400">01</span>
               <div>
@@ -134,10 +139,15 @@ export default function ModelPerformance() {
                 <span className="font-bold text-cyan-400 text-sm">{(rf.roc_auc * 100).toFixed(2)}%</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Row 2: XGBoost */}
-          <div className="p-4 bg-black/30 border border-[var(--line)] rounded flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: -14 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+            className="p-4 bg-black/30 border border-[var(--line)] rounded flex flex-col md:flex-row md:items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-4">
               <span className="font-display font-bold text-2xl text-gray-500">02</span>
               <div>
@@ -169,10 +179,15 @@ export default function ModelPerformance() {
                 <span className="font-bold text-cyan-400 text-sm">{(xgb.roc_auc * 100).toFixed(2)}%</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Row 3: Logistic Regression */}
-          <div className="p-4 bg-black/30 border border-[var(--line)] rounded flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: -14 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.19, ease: [0.22, 1, 0.36, 1] }}
+            className="p-4 bg-black/30 border border-[var(--line)] rounded flex flex-col md:flex-row md:items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-4">
               <span className="font-display font-bold text-2xl text-gray-500">03</span>
               <div>
@@ -204,7 +219,7 @@ export default function ModelPerformance() {
                 <span className="font-bold text-cyan-400 text-sm">{(lr.roc_auc * 100).toFixed(2)}%</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 

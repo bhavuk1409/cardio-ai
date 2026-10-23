@@ -331,7 +331,13 @@ export default function RiskPrediction() {
                 className="btn btn--primary flex-1 py-3"
                 disabled={loading}
               >
-                {loading ? 'COMPUTING INFERENCE…' : '▶ RUN CLINICAL INFERENCE'}
+                {loading ? (
+                  <>
+                    <span className="spinner" /> COMPUTING INFERENCE…
+                  </>
+                ) : (
+                  <>▶ RUN CLINICAL INFERENCE</>
+                )}
               </button>
               <button
                 type="button"
@@ -451,7 +457,13 @@ export default function RiskPrediction() {
                         const pct = Math.min(Math.round((absVal / 0.15) * 100), 100);
                         const cleanName = c.feature.replace(/^(num__|cat__)/, '');
                         return (
-                          <div key={idx} className="shap-bar">
+                          <motion.div
+                            key={idx}
+                            className="shap-bar"
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                          >
                             <span className="shap-bar__label" title={cleanName}>
                               {cleanName}
                             </span>
@@ -469,7 +481,7 @@ export default function RiskPrediction() {
                             >
                               {isPos ? '+' : ''}{c.shap_value.toFixed(3)}
                             </span>
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>

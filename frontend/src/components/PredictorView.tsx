@@ -490,7 +490,21 @@ export function PredictorView({ onConsultAI }: Props) {
             >
               <div className="empty__grid" />
               <div className="empty__inner">
-                <span className="empty__mark">◎</span>
+                <svg
+                  className="empty__mark mark"
+                  viewBox="0 0 32 32"
+                  style={{ width: 52, height: 52, margin: '0 auto 16px', display: 'block' }}
+                  aria-hidden="true"
+                >
+                  <circle cx="16" cy="16" r="10" fill="none" stroke="var(--red)" strokeWidth="3" />
+                  <circle cx="16" cy="16" r="4" fill="none" stroke="var(--text)" strokeWidth="2" />
+                  <g stroke="var(--text)" strokeWidth="1.4" strokeLinecap="round">
+                    <line x1="16" y1="6" x2="16" y2="9.5" />
+                    <line x1="16" y1="22.5" x2="16" y2="26" />
+                    <line x1="6" y1="16" x2="9.5" y2="16" />
+                    <line x1="22.5" y1="16" x2="26" y2="16" />
+                  </g>
+                </svg>
                 <p className="empty__title">TELEMETRY STANDBY</p>
                 <p className="empty__sub">
                   Select a preset patient profile or customize clinical biomarkers, then click{' '}

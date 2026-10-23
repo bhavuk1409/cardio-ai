@@ -37,15 +37,14 @@ export function Header({ mode, onMode }: Props) {
     <header className="masthead">
       <div className="masthead__brand">
         <svg className="mark" viewBox="0 0 32 32" aria-hidden="true">
-          <circle cx="16" cy="16" r="13.5" fill="none" stroke="var(--red)" strokeWidth="2.5" />
-          <path
-            d="M5 16h5.5l2-5.5 3.5 11 3-7.5 2 4h6"
-            fill="none"
-            stroke="var(--text)"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <circle cx="16" cy="16" r="10" fill="none" stroke="var(--red)" strokeWidth="3" />
+          <circle cx="16" cy="16" r="4" fill="none" stroke="var(--text)" strokeWidth="2" />
+          <g stroke="var(--text)" strokeWidth="1.4" strokeLinecap="round">
+            <line x1="16" y1="6" x2="16" y2="9.5" />
+            <line x1="16" y1="22.5" x2="16" y2="26" />
+            <line x1="6" y1="16" x2="9.5" y2="16" />
+            <line x1="22.5" y1="16" x2="26" y2="16" />
+          </g>
         </svg>
         <div>
           <h1 className="masthead__title">CARDIO AI</h1>

@@ -1,0 +1,44 @@
+# Environment & Secrets (Never commit secrets)
+.env
+*.env
+!.env.example
+
+# Python virtual environments & bytecode
+backend/venv/
+venv/
+env/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Node / Frontend build artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

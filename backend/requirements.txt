@@ -1,0 +1,37 @@
+# Core FastAPI stack
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+python-dotenv==1.0.1
+httpx==0.28.0
+
+# ML & Data
+scikit-learn==1.5.2
+pandas==2.2.3
+numpy==1.26.4
+xgboost==2.1.3
+shap==0.46.0
+joblib==1.4.2
+matplotlib==3.9.3
+seaborn==0.13.2
+
+# RAG & Embeddings
+sentence-transformers==3.3.1
+chromadb==0.5.23
+langchain==0.3.12
+langchain-community==0.3.12
+langchain-google-genai==2.0.7
+google-generativeai==0.8.3
+
+# Dataset download
+ucimlrepo==0.0.7
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.0
+
+# Utilities
+requests==2.32.3
+tqdm==4.67.1

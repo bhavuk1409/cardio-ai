@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { api } from '../services/api';
 import { ChatResponse, Passage } from '../types';
 
@@ -21,6 +24,7 @@ const PRESET_QUERIES = [
 ];
 
 export default function MedicalAssistant() {
+  const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -35,6 +39,13 @@ export default function MedicalAssistant() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  // Pre-fill query if navigated from Risk Prediction console
+  useEffect(() => {
+    if (location.state && (location.state as any).prefilledQuery) {
+      setQuery((location.state as any).prefilledQuery);
+    }
+  }, [location.state]);
 
   async function handleSend(qToSend?: string) {
     const text = qToSend || query;
@@ -135,8 +146,10 @@ export default function MedicalAssistant() {
               {m.error ? (
                 <div className="text-red-400 text-xs font-mono">⚠ {m.error}</div>
               ) : (
-                <div className="text-sm font-mono text-gray-200 whitespace-pre-wrap leading-relaxed">
-                  {m.content}
+                <div className="markdown-body">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {m.content}
+                  </ReactMarkdown>
                 </div>
               )}
 

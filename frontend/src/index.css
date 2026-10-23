@@ -227,10 +227,17 @@ button {
   display: inline-flex;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
   background: rgba(0, 0, 0, 0.35);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
-.seg button {
+.seg::-webkit-scrollbar {
+  display: none;
+}
+.seg button, .seg a {
   font-family: var(--font-mono);
   font-size: 11.5px;
   letter-spacing: 0.1em;
@@ -242,18 +249,68 @@ button {
   align-items: center;
   gap: 6px;
   border-right: 1px solid var(--line);
+  flex-shrink: 0;
 }
-.seg button:last-child {
+.seg button:last-child, .seg a:last-child {
   border-right: none;
 }
-.seg button.active {
+.seg button.active, .seg a.active {
   background: var(--text);
   color: #08090b;
   font-weight: 600;
 }
-.seg button:not(.active):hover {
+.seg button:not(.active):hover, .seg a:not(.active):hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- Markdown Telemetry Prose ---------- */
+.markdown-body {
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.markdown-body p {
+  margin-bottom: 12px;
+}
+.markdown-body strong {
+  color: #fff;
+  font-weight: 600;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow-x: auto;
+  display: block;
+}
+.markdown-body th {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  text-align: left;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.markdown-body td {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.markdown-body ul, .markdown-body ol {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+.markdown-body li {
+  margin-bottom: 6px;
+}
+.markdown-body em {
+  color: var(--muted);
 }
 
 /* ---------- Inputs & Form Controls ---------- */

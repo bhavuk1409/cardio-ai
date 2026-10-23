@@ -107,17 +107,25 @@ export default function RiskPrediction() {
               <span>PRELOAD CLINICAL CASE</span>
               <b>VALIDATION SAMPLES</b>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {SAMPLE_RECORDS.map((s, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`btn btn--sm ${selectedSample === String(i) ? 'btn--cyan' : 'btn--outline'}`}
-                  onClick={() => loadSample(i)}
-                >
-                  {i === 0 ? 'HIGH RISK' : i === 1 ? 'LOW RISK' : 'BORDERLINE'}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-2">
+              {SAMPLE_RECORDS.map((s, i) => {
+                const isPos = s.label.includes('Class 1');
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`btn btn--sm text-left justify-between ${
+                      selectedSample === String(i) ? 'btn--cyan' : 'btn--outline'
+                    }`}
+                    onClick={() => loadSample(i)}
+                  >
+                    <span className="truncate">{s.label.split('—')[0].trim()}</span>
+                    <span className={`badge ${isPos ? 'badge--red' : 'badge--green'} text-[8.5px]`}>
+                      {isPos ? 'CLASS 1' : 'CLASS 0'}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -485,7 +493,25 @@ export default function RiskPrediction() {
                     <button
                       type="button"
                       className="btn btn--cyan btn--sm"
-                      onClick={() => navigate('/assistant')}
+                      onClick={() =>
+                        navigate('/assistant', {
+                          state: {
+                            prefilledQuery: `Patient Profile (${form.age}yo ${
+                              form.sex === 1 ? 'Male' : 'Female'
+                            }): Resting BP ${form.trestbps} mmHg, Cholesterol ${
+                              form.chol
+                            } mg/dl, ST depression ${form.oldpeak} mm, Max HR ${
+                              form.thalach
+                            } bpm. The model predicted ${probPercent.toFixed(
+                              1
+                            )}% cardiovascular risk (${
+                              isHighRisk
+                                ? 'Class 1 - Risk Detected'
+                                : 'Class 0 - Low Risk'
+                            }). What clinical lifestyle interventions and guideline diagnostic tests are recommended?`,
+                          },
+                        })
+                      }
                     >
                       QUERY MEDICAL AI →
                     </button>

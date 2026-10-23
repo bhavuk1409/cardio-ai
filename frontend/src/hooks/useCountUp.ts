@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 
 /** Animate a number from its previous value to `target` over `duration` ms. */
 export function useCountUp(target: number, duration = 800): number {
-  const [value, setValue] = useState(target);
-  const fromRef = useRef(target);
+  const safeTarget = Number.isFinite(target) ? target : 0;
+  const [value, setValue] = useState(safeTarget);
+  const fromRef = useRef(safeTarget);
   const rafRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const from = fromRef.current;
     const start = performance.now();
-    const delta = target - from;
+    const delta = safeTarget - from;
 
     if (Math.abs(delta) < 0.0001) {
-      setValue(target);
-      fromRef.current = target;
+      setValue(safeTarget);
+      fromRef.current = safeTarget;
       return;
     }
 
@@ -25,16 +26,16 @@ export function useCountUp(target: number, duration = 800): number {
       if (t < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
-        fromRef.current = target;
+        fromRef.current = safeTarget;
       }
     };
 
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      fromRef.current = target;
+      fromRef.current = safeTarget;
     };
-  }, [target, duration]);
+  }, [safeTarget, duration]);
 
   return value;
 }

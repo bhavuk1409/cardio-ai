@@ -46,33 +46,33 @@ export default function ModelPerformance() {
   const chartData = [
     {
       metric: 'Accuracy',
-      'Logistic Regression': (lr?.accuracy * 100).toFixed(1),
-      'Random Forest': (rf?.accuracy * 100).toFixed(1),
-      XGBoost: (xgb?.accuracy * 100).toFixed(1),
+      'Logistic Regression': Number(((lr?.accuracy || 0) * 100).toFixed(1)),
+      'Random Forest': Number(((rf?.accuracy || 0) * 100).toFixed(1)),
+      XGBoost: Number(((xgb?.accuracy || 0) * 100).toFixed(1)),
     },
     {
       metric: 'Precision',
-      'Logistic Regression': (lr?.precision * 100).toFixed(1),
-      'Random Forest': (rf?.precision * 100).toFixed(1),
-      XGBoost: (xgb?.precision * 100).toFixed(1),
+      'Logistic Regression': Number(((lr?.precision || 0) * 100).toFixed(1)),
+      'Random Forest': Number(((rf?.precision || 0) * 100).toFixed(1)),
+      XGBoost: Number(((xgb?.precision || 0) * 100).toFixed(1)),
     },
     {
       metric: 'Recall (Sensitivity)',
-      'Logistic Regression': (lr?.recall * 100).toFixed(1),
-      'Random Forest': (rf?.recall * 100).toFixed(1),
-      XGBoost: (xgb?.recall * 100).toFixed(1),
+      'Logistic Regression': Number(((lr?.recall || 0) * 100).toFixed(1)),
+      'Random Forest': Number(((rf?.recall || 0) * 100).toFixed(1)),
+      XGBoost: Number(((xgb?.recall || 0) * 100).toFixed(1)),
     },
     {
       metric: 'F1-Score',
-      'Logistic Regression': (lr?.f1 * 100).toFixed(1),
-      'Random Forest': (rf?.f1 * 100).toFixed(1),
-      XGBoost: (xgb?.f1 * 100).toFixed(1),
+      'Logistic Regression': Number(((lr?.f1 || 0) * 100).toFixed(1)),
+      'Random Forest': Number(((rf?.f1 || 0) * 100).toFixed(1)),
+      XGBoost: Number(((xgb?.f1 || 0) * 100).toFixed(1)),
     },
     {
       metric: 'ROC-AUC',
-      'Logistic Regression': (lr?.roc_auc * 100).toFixed(1),
-      'Random Forest': (rf?.roc_auc * 100).toFixed(1),
-      XGBoost: (xgb?.roc_auc * 100).toFixed(1),
+      'Logistic Regression': Number(((lr?.roc_auc || 0) * 100).toFixed(1)),
+      'Random Forest': Number(((rf?.roc_auc || 0) * 100).toFixed(1)),
+      XGBoost: Number(((xgb?.roc_auc || 0) * 100).toFixed(1)),
     },
   ];
 

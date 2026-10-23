@@ -1,42 +1,63 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import { Header } from './components/Header';
+import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Header, AppMode } from './components/Header';
 import { Colophon } from './components/Colophon';
-import Overview from './pages/Overview';
-import RiskPrediction from './pages/RiskPrediction';
-import ModelPerformance from './pages/ModelPerformance';
-import Explainability from './pages/Explainability';
-import MedicalAssistant from './pages/MedicalAssistant';
-import KnowledgeSources from './pages/KnowledgeSources';
-import About from './pages/About';
-
-function AnimatedRoutes() {
-  const location = useLocation();
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Overview />} />
-        <Route path="/predict" element={<RiskPrediction />} />
-        <Route path="/performance" element={<ModelPerformance />} />
-        <Route path="/models" element={<Navigate to="/performance" replace />} />
-        <Route path="/explain" element={<Explainability />} />
-        <Route path="/assistant" element={<MedicalAssistant />} />
-        <Route path="/sources" element={<KnowledgeSources />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
-    </AnimatePresence>
-  );
-}
+import { PredictorView } from './components/PredictorView';
+import { AssistantView } from './components/AssistantView';
+import { BenchmarkView } from './components/BenchmarkView';
 
 export default function App() {
+  const [mode, setMode] = useState<AppMode>('predict');
+  const [aiPrompt, setAiPrompt] = useState<string>('');
+
+  function handleConsultAI(prompt: string) {
+    setAiPrompt(prompt);
+    setMode('assistant');
+  }
+
   return (
-    <BrowserRouter>
-      <Header />
+    <>
+      <Header mode={mode} onMode={setMode} />
       <main className="w-full">
-        <AnimatedRoutes />
+        <AnimatePresence mode="wait">
+          {mode === 'predict' && (
+            <motion.div
+              key="predict"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <PredictorView onConsultAI={handleConsultAI} />
+            </motion.div>
+          )}
+
+          {mode === 'assistant' && (
+            <motion.div
+              key="assistant"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <AssistantView initialQuery={aiPrompt} />
+            </motion.div>
+          )}
+
+          {mode === 'benchmark' && (
+            <motion.div
+              key="benchmark"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <BenchmarkView />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
       <Colophon />
-    </BrowserRouter>
+    </>
   );
 }

@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
 import { api } from '../services/api';
 
-export function Header() {
+export type AppMode = 'predict' | 'assistant' | 'benchmark';
+
+interface Props {
+  mode: AppMode;
+  onMode: (m: AppMode) => void;
+}
+
+export function Header({ mode, onMode }: Props) {
   const [apiUp, setApiUp] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -27,16 +33,6 @@ export function Header() {
     apiUp === null ? 'CONNECTING' : apiUp ? 'LIVE' : 'OFFLINE';
   const dotClass = apiUp === null ? 'dot--wait' : apiUp ? 'dot--live' : 'dot--off';
 
-  const navItems = [
-    { to: '/', label: 'Overview' },
-    { to: '/predict', label: 'Predict' },
-    { to: '/explain', label: 'SHAP' },
-    { to: '/models', label: 'Benchmark' },
-    { to: '/assistant', label: 'Medical AI' },
-    { to: '/sources', label: 'Knowledge' },
-    { to: '/about', label: 'About' },
-  ];
-
   return (
     <header className="masthead">
       <div className="masthead__brand">
@@ -52,8 +48,8 @@ export function Header() {
           />
         </svg>
         <div>
-          <h1 className="masthead__title">CLINICAL AI</h1>
-          <p className="masthead__sub">CARDIOVASCULAR RISK & RAG</p>
+          <h1 className="masthead__title">CARDIO AI</h1>
+          <p className="masthead__sub">CLINICAL RISK PREDICTOR & COPILOT</p>
         </div>
       </div>
 
@@ -63,17 +59,29 @@ export function Header() {
           <span className="status__text">{statusText}</span>
         </div>
 
-        <nav className="seg">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => (isActive ? 'active' : '')}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        <div className="seg">
+          <button
+            type="button"
+            className={mode === 'predict' ? 'active' : ''}
+            onClick={() => onMode('predict')}
+          >
+            Predictor
+          </button>
+          <button
+            type="button"
+            className={mode === 'assistant' ? 'active' : ''}
+            onClick={() => onMode('assistant')}
+          >
+            Medical AI
+          </button>
+          <button
+            type="button"
+            className={mode === 'benchmark' ? 'active' : ''}
+            onClick={() => onMode('benchmark')}
+          >
+            Benchmark
+          </button>
+        </div>
       </div>
     </header>
   );

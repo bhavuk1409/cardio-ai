@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { PredictionInput, PredictionResponse, SAMPLE_RECORDS } from '../types';
 import { StatReadout } from './StatReadout';
+import { CustomSelect } from './CustomSelect';
 
 interface Props {
   onConsultAI: (prompt: string) => void;
@@ -149,14 +150,14 @@ export function PredictorView({ onConsultAI }: Props) {
             </div>
             <div className="field">
               <label>BIOLOGICAL SEX</label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.sex}
-                onChange={(e) => handleChange('sex', Number(e.target.value))}
-              >
-                <option value={1}>Male</option>
-                <option value={0}>Female</option>
-              </select>
+                onChange={(val) => handleChange('sex', Number(val))}
+                options={[
+                  { value: 1, label: 'Male' },
+                  { value: 0, label: 'Female' },
+                ]}
+              />
             </div>
           </div>
 
@@ -192,16 +193,16 @@ export function PredictorView({ onConsultAI }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div className="field">
               <label>CHEST PAIN TYPE</label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.cp}
-                onChange={(e) => handleChange('cp', Number(e.target.value))}
-              >
-                <option value={1}>Typical Angina</option>
-                <option value={2}>Atypical Angina</option>
-                <option value={3}>Non-Anginal Pain</option>
-                <option value={4}>Asymptomatic (High Risk)</option>
-              </select>
+                onChange={(val) => handleChange('cp', Number(val))}
+                options={[
+                  { value: 1, label: '1 — Typical Angina' },
+                  { value: 2, label: '2 — Atypical Angina' },
+                  { value: 3, label: '3 — Non-Anginal' },
+                  { value: 4, label: '4 — Asymptomatic', badge: 'HIGH RISK', badgeColor: 'red' },
+                ]}
+              />
             </div>
             <div className="field">
               <label>MAX HEART RATE <b>BPM</b></label>
@@ -234,15 +235,15 @@ export function PredictorView({ onConsultAI }: Props) {
             </div>
             <div className="field">
               <label>PEAK ST SLOPE</label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.slope}
-                onChange={(e) => handleChange('slope', Number(e.target.value))}
-              >
-                <option value={1}>Upsloping</option>
-                <option value={2}>Flat</option>
-                <option value={3}>Downsloping</option>
-              </select>
+                onChange={(val) => handleChange('slope', Number(val))}
+                options={[
+                  { value: 1, label: '1 — Upsloping' },
+                  { value: 2, label: '2 — Flat', badge: 'ISCHEMIC', badgeColor: 'amber' },
+                  { value: 3, label: '3 — Downsloping' },
+                ]}
+              />
             </div>
           </div>
 
@@ -250,28 +251,28 @@ export function PredictorView({ onConsultAI }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div className="field">
               <label>MAJOR VESSELS <b>(0–3)</b></label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.ca}
-                onChange={(e) => handleChange('ca', Number(e.target.value))}
-              >
-                <option value={0}>0 Vessels</option>
-                <option value={1}>1 Vessel</option>
-                <option value={2}>2 Vessels</option>
-                <option value={3}>3 Vessels</option>
-              </select>
+                onChange={(val) => handleChange('ca', Number(val))}
+                options={[
+                  { value: 0, label: '0 Vessels' },
+                  { value: 1, label: '1 Vessel', badge: 'PLAQUE', badgeColor: 'red' },
+                  { value: 2, label: '2 Vessels', badge: 'PLAQUE', badgeColor: 'red' },
+                  { value: 3, label: '3 Vessels', badge: 'PLAQUE', badgeColor: 'red' },
+                ]}
+              />
             </div>
             <div className="field">
               <label>THALLIUM SCAN</label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.thal}
-                onChange={(e) => handleChange('thal', Number(e.target.value))}
-              >
-                <option value={3}>Normal Blood Flow</option>
-                <option value={6}>Fixed Defect</option>
-                <option value={7}>Reversible Defect</option>
-              </select>
+                onChange={(val) => handleChange('thal', Number(val))}
+                options={[
+                  { value: 3, label: 'Normal Flow', badge: 'NORMAL', badgeColor: 'green' },
+                  { value: 6, label: 'Fixed Defect', badge: 'DEFECT', badgeColor: 'amber' },
+                  { value: 7, label: 'Reversible Defect', badge: 'ISCHEMIA', badgeColor: 'red' },
+                ]}
+              />
             </div>
           </div>
 
@@ -279,25 +280,25 @@ export function PredictorView({ onConsultAI }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div className="field">
               <label>EXERCISE ANGINA</label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.exang}
-                onChange={(e) => handleChange('exang', Number(e.target.value))}
-              >
-                <option value={0}>No</option>
-                <option value={1}>Yes (Exercise Angina)</option>
-              </select>
+                onChange={(val) => handleChange('exang', Number(val))}
+                options={[
+                  { value: 0, label: 'No' },
+                  { value: 1, label: 'Yes (Angina)', badge: 'ISCHEMIC', badgeColor: 'red' },
+                ]}
+              />
             </div>
             <div className="field">
               <label>FASTING SUGAR &gt; 120</label>
-              <select
-                className="select"
+              <CustomSelect
                 value={form.fbs}
-                onChange={(e) => handleChange('fbs', Number(e.target.value))}
-              >
-                <option value={0}>Normal (≤ 120)</option>
-                <option value={1}>Elevated (&gt; 120)</option>
-              </select>
+                onChange={(val) => handleChange('fbs', Number(val))}
+                options={[
+                  { value: 0, label: 'Normal (≤ 120)' },
+                  { value: 1, label: 'Elevated (> 120)', badge: 'ELEVATED', badgeColor: 'amber' },
+                ]}
+              />
             </div>
           </div>
 

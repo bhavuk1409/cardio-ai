@@ -31,9 +31,9 @@ function formatFeatureName(raw: string): string {
     'slope_3.0': 'Downsloping ST Slope',
     'slope': 'Peak ST Segment Slope',
     'fbs': 'Fasting Blood Sugar',
-    'restecg_2.0': 'Left Ventricular Hypertrophy',
+    'restecg_2.0': 'Left Ventricular Hypertrophy (Estes)',
     'restecg_1.0': 'ST-T Wave Abnormality',
-    'restecg_0.0': 'Normal Resting ECG',
+    'restecg_0.0': 'Normal Resting Limits',
   };
   return map[clean] || clean.replace(/_/g, ' ').replace(/\.0$/, '');
 }
@@ -52,40 +52,70 @@ export async function downloadClinicalReportPdf(
   const isHighRisk = result.predicted_class === 1;
 
   const maxTargetHr = 220 - form.age;
+  const target85 = Math.round(maxTargetHr * 0.85);
   const hrPercent = Math.round((form.thalach / maxTargetHr) * 100);
 
+  // Interpretation status pills
   const bpStatus =
     form.trestbps >= 140
-      ? { text: 'STAGE 2 HTN', color: '#b91c1c', bg: '#fef2f2' }
+      ? { text: 'Stage 2 Hypertension', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
       : form.trestbps >= 130
-      ? { text: 'STAGE 1 HTN', color: '#c2410c', bg: '#fff7ed' }
+      ? { text: 'Stage 1 Hypertension', color: '#c2410c', bg: '#fff7ed', border: '#ffedd5' }
       : form.trestbps >= 120
-      ? { text: 'ELEVATED', color: '#a16207', bg: '#fefce8' }
-      : { text: 'OPTIMAL', color: '#15803d', bg: '#f0fdf4' };
+      ? { text: 'Elevated BP', color: '#a16207', bg: '#fefce8', border: '#fef08a' }
+      : { text: 'Optimal BP', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
 
   const hrStatus =
     hrPercent < 70
-      ? { text: 'CHRONOTROPIC INCOMPETENCE', color: '#c2410c', bg: '#fff7ed' }
-      : { text: 'TARGET REACHED', color: '#15803d', bg: '#f0fdf4' };
+      ? { text: 'Chronotropic Incompetence', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
+      : hrPercent < 85
+      ? { text: 'Submaximal Effort', color: '#a16207', bg: '#fefce8', border: '#fef08a' }
+      : { text: 'Target Reached', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
 
   const cholStatus =
     form.chol >= 240
-      ? { text: 'HIGH RISK (≥240)', color: '#b91c1c', bg: '#fef2f2' }
+      ? { text: 'High Risk (≥240)', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
       : form.chol >= 200
-      ? { text: 'BORDERLINE (200-239)', color: '#c2410c', bg: '#fff7ed' }
-      : { text: 'DESIRABLE (<200)', color: '#15803d', bg: '#f0fdf4' };
+      ? { text: 'Borderline High', color: '#c2410c', bg: '#fff7ed', border: '#ffedd5' }
+      : { text: 'Desirable Level', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
 
   const stStatus =
     form.oldpeak >= 1.5
-      ? { text: 'SIGNIFICANT ISCHEMIA', color: '#b91c1c', bg: '#fef2f2' }
+      ? { text: 'Significant Ischemia', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
       : form.oldpeak >= 1.0
-      ? { text: 'EQUIVOCAL ISCHEMIA', color: '#c2410c', bg: '#fff7ed' }
-      : { text: 'PHYSIOLOGICAL', color: '#15803d', bg: '#f0fdf4' };
+      ? { text: 'Equivocal Ischemia', color: '#c2410c', bg: '#fff7ed', border: '#ffedd5' }
+      : { text: 'Normal Recovery', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
 
   const caStatus =
     form.ca > 0
-      ? { text: `${Math.round(form.ca)} / 3 CALCIFIED`, color: '#b91c1c', bg: '#fef2f2' }
-      : { text: '0 CALCIFIED (CLEAR)', color: '#15803d', bg: '#f0fdf4' };
+      ? { text: `${Math.round(form.ca)} / 3 Calcified`, color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
+      : { text: 'Clear (0 Calcified)', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
+
+  const exangStatus =
+    form.exang === 1
+      ? { text: 'Symptomatic', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
+      : { text: 'Asymptomatic', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
+
+  const restecgStatus =
+    form.restecg === 2
+      ? { text: 'Requires Clinical Review', color: '#a16207', bg: '#fefce8', border: '#fef08a' }
+      : form.restecg === 1
+      ? { text: 'ST-T Wave Abnormality', color: '#c2410c', bg: '#fff7ed', border: '#ffedd5' }
+      : { text: 'Within Normal Limits', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
+
+  const slopeStatus =
+    form.slope === 2
+      ? { text: 'High Ischemia Marker', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
+      : form.slope === 3
+      ? { text: 'Severe Ischemia Marker', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
+      : { text: 'Physiological Upslope', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
+
+  const thalStatus =
+    form.thal === 7
+      ? { text: 'Reversible Ischemia', color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' }
+      : form.thal === 6
+      ? { text: 'Fixed Infarction Scar', color: '#c2410c', bg: '#fff7ed', border: '#ffedd5' }
+      : { text: 'Normal Perfusion', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' };
 
   const cpMap: Record<number, string> = {
     1: 'Typical Angina',
@@ -102,282 +132,443 @@ export async function downloadClinicalReportPdf(
 
   const slopeMap: Record<number, string> = {
     1: 'Upsloping ST Segment',
-    2: 'Flat / Horizontal ST (High Specificity)',
-    3: 'Downsloping ST (Severe Ischemia)',
+    2: 'Flat / Horizontal ST',
+    3: 'Downsloping ST Segment',
   };
 
   const thalMap: Record<number, string> = {
     3: 'Normal Myocardial Flow',
-    6: 'Fixed Perfusion Defect (Scar)',
-    7: 'Reversible Defect (Viable Ischemia)',
+    6: 'Fixed Perfusion Defect',
+    7: 'Reversible Defect',
   };
 
-  const today = new Date().toLocaleDateString('en-US', {
+  const now = new Date();
+  const dateFormatted = now.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+  const timeFormatted = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 
-  const recordId = `CLV-${Math.floor(100000 + Math.random() * 900000)}`;
+  const orderId = `CLV-${Math.floor(200000 + (form.age * 137 + form.trestbps * 19) % 800000)}`;
+
+  // Determine risk category & scale segment
+  let riskCategory = 'Low Risk';
+  let riskCategoryColor = '#15803d';
+  let activeSegmentIndex = 0; // 0: <5%, 1: 5-20%, 2: 20-50%, 3: >50%
+
+  if (probPercent >= 50) {
+    riskCategory = 'High Risk';
+    riskCategoryColor = '#b91c1c';
+    activeSegmentIndex = 3;
+  } else if (probPercent >= 20) {
+    riskCategory = 'High Risk';
+    riskCategoryColor = '#c2410c';
+    activeSegmentIndex = 2;
+  } else if (probPercent >= 5) {
+    riskCategory = 'Intermediate Risk';
+    riskCategoryColor = '#a16207';
+    activeSegmentIndex = 1;
+  } else {
+    riskCategory = 'Low Risk';
+    riskCategoryColor = '#15803d';
+    activeSegmentIndex = 0;
+  }
+
+  // Top SHAP drivers (up to 5)
   const topDrivers = (shapData?.contributions || []).slice(0, 5);
 
-  // Exact A4 Container (794px width x 1123px height at 96 DPI)
+  // SVG Diverging SHAP Bar Chart Generator
+  const chartWidth = 726;
+  const chartHeight = 110;
+  const labelColWidth = 195;
+  const valueColWidth = 55;
+  const barAreaWidth = chartWidth - labelColWidth - valueColWidth; // ~476px
+  const zeroX = labelColWidth + barAreaWidth / 2; // Exact center zero line ~433px
+  const halfBarWidth = barAreaWidth / 2; // ~238px corresponds to 0.10 delta
+  const maxDelta = 0.10;
+
+  const barRowsHtml = topDrivers
+    .map((c: any, i: number) => {
+      const y = 8 + i * 19;
+      const val = c.shap_value;
+      const isPos = val >= 0;
+      const barLen = Math.min(Math.abs(val) / maxDelta, 1) * halfBarWidth;
+      const barX = isPos ? zeroX : zeroX - barLen;
+      const barColor = isPos ? '#d97770' : '#86efac'; // muted coral red / soft green
+      const label = formatFeatureName(c.feature);
+      const valStr = `${isPos ? '+' : ''}${val.toFixed(3)}`;
+      const valX = isPos ? zeroX + barLen + 6 : zeroX - barLen - 6;
+      const textAnchor = isPos ? 'start' : 'end';
+
+      return `
+        <!-- Row ${i} -->
+        <text x="${labelColWidth - 8}" y="${y + 10}" font-size="9" fill="#334155" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-weight="500">${label}</text>
+        <rect x="${barX}" y="${y + 2}" width="${Math.max(barLen, 2)}" height="10" fill="${barColor}" rx="1"/>
+        <text x="${valX}" y="${y + 10}" font-size="8.5" fill="${isPos ? '#b91c1c' : '#15803d'}" text-anchor="${textAnchor}" font-family="monospace" font-weight="600">${valStr}</text>
+      `;
+    })
+    .join('');
+
+  // The Exact Publication-Quality HTML Layout
   const reportHtml = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a; background: #ffffff; width: 794px; min-height: 1123px; max-height: 1123px; padding: 28px 32px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; background: #ffffff; width: 794px; min-height: 1123px; max-height: 1123px; padding: 24px 34px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
       
       <div>
-        <!-- 1. HOSPITAL LETTERHEAD MASTHEAD -->
-        <div style="border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <!-- ── HEADER ── -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 8px; border-bottom: 1px solid #334155; margin-bottom: 14px;">
           <div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 32px; height: 32px; background: #0f172a; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="20" height="20" viewBox="0 0 40 40">
-                  <polygon points="20,4 36,20 20,36 4,20" fill="none" stroke="#dc2626" stroke-width="3" stroke-linejoin="round"/>
-                  <polyline points="9,20 13,20 15.5,13 18,27 20,11 22.5,27 25,20 31,20" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <h1 style="margin: 0; font-size: 16px; font-weight: 800; letter-spacing: 0.04em; color: #0f172a; text-transform: uppercase; line-height: 1.1;">
-                  CARDIOLOGY CLINICAL CONSULTATION REPORT
-                </h1>
-                <p style="margin: 2px 0 0; font-size: 9.5px; font-weight: 600; color: #475569; letter-spacing: 0.06em; text-transform: uppercase;">
-                  Cardiovascular Risk Stratification & Clinical Decision Support System
-                </p>
-              </div>
-            </div>
-          </div>
-          <div style="text-align: right; font-family: monospace; font-size: 9.5px; color: #475569; line-height: 1.35;">
-            <div style="font-weight: 700; color: #0f172a; font-size: 10px;">CONFIDENTIAL MEDICAL RECORD</div>
-            <div>Date: ${today}</div>
-            <div>Order ID: ${recordId}</div>
-          </div>
-        </div>
-
-        <!-- 2. PATIENT DEMOGRAPHICS -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px 14px; margin-bottom: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-          <div>
-            <div style="font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Patient Demographics</div>
-            <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-top: 1px;">${form.age}yo ${form.sex === 1 ? 'Male' : 'Female'}</div>
-          </div>
-          <div>
-            <div style="font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Chief Clinical Symptom</div>
-            <div style="font-size: 11px; font-weight: 600; color: #0f172a; margin-top: 1px;">${cpMap[form.cp] || 'Asymptomatic'}</div>
-          </div>
-          <div>
-            <div style="font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">Cohort Model</div>
-            <div style="font-size: 11px; font-weight: 600; color: #0f172a; margin-top: 1px;">UCI Cleveland (14-Biomarker)</div>
-          </div>
-          <div>
-            <div style="font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #64748b;">ML Algorithm</div>
-            <div style="font-size: 11px; font-weight: 600; color: #0f172a; margin-top: 1px;">Random Forest Ensemble</div>
-          </div>
-        </div>
-
-        <!-- 3. RISK PROJECTION CARD -->
-        <div style="background: ${isHighRisk ? '#fef2f2' : '#f0fdf4'}; border-left: 4px solid ${isHighRisk ? '#dc2626' : '#16a34a'}; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; border-radius: 4px; padding: 10px 16px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: ${isHighRisk ? '#991b1b' : '#166534'};">
-              CARDIOVASCULAR RISK PROJECTION
-            </div>
-            <div style="display: flex; align-items: baseline; gap: 12px; margin-top: 2px;">
-              <span style="font-size: 24px; font-weight: 900; color: ${isHighRisk ? '#dc2626' : '#16a34a'}; font-family: monospace; line-height: 1;">
-                ${probPercent.toFixed(1)}%
-              </span>
-              <span style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: ${isHighRisk ? '#b91c1c' : '#15803d'};">
-                ${isHighRisk ? '● HIGH CARDIAC RISK — CLASS 1 DETECTED' : '● LOW CARDIAC RISK — WITHIN NORMAL LIMITS'}
-              </span>
-            </div>
-            <p style="margin: 2px 0 0; font-size: 10px; color: ${isHighRisk ? '#7f1d1d' : '#14532d'}; line-height: 1.35;">
-              ${isHighRisk 
-                ? 'Clinical markers indicate significant ischemic ST shifts and coronary vessel calcification associated with obstructive CAD.' 
-                : 'Preserved exercise tolerance, normal ST recovery, and clear vessels indicate low probability of obstructive CAD.'}
+            <h1 style="margin: 0; font-size: 20px; font-weight: 700; color: #1e293b; letter-spacing: -0.01em;">
+              Cardiology Clinical Consultation Report
+            </h1>
+            <p style="margin: 3px 0 0; font-size: 11px; color: #64748b; font-weight: 400;">
+              Cardiovascular Risk Stratification & Clinical Decision Support System
             </p>
           </div>
-          <div style="text-align: right; font-family: monospace; font-size: 9px; color: #64748b; border-left: 1px solid ${isHighRisk ? '#fecaca' : '#bbf7d0'}; padding-left: 14px; line-height: 1.4;">
-            <div>Base Rate: 50.6%</div>
-            <div style="font-weight: 700; color: #0f172a;">AUC: 0.903</div>
-            <div>Brier: 0.118</div>
+          <div style="text-align: right; font-size: 9px; color: #475569; line-height: 1.4;">
+            <div style="font-weight: 700; color: #1e293b;">Confidential Medical Record</div>
+            <div>Date: ${dateFormatted}</div>
+            <div>Order ID: ${orderId}</div>
+            <div>Report Version: v1.0</div>
           </div>
         </div>
 
-        <!-- 4. SECTION 1: BIOMARKERS TABLE -->
-        <div style="margin-bottom: 12px;">
-          <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">
-            1. OBJECTIVE CLINICAL BIOMARKERS & HEMODYNAMICS
+        <!-- ── 1. PATIENT SUMMARY ── -->
+        <div style="margin-bottom: 13px;">
+          <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+            1. Patient Summary
           </div>
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; line-height: 1.25;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px 12px; display: grid; grid-template-columns: 0.9fr 0.8fr 1.6fr 1.5fr 1.4fr 1.3fr; gap: 8px; align-items: flex-start;">
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 6px;">
+              <div style="font-size: 8px; color: #64748b; text-transform: capitalize;">Age</div>
+              <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-top: 2px;">${form.age} years</div>
+            </div>
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 6px;">
+              <div style="font-size: 8px; color: #64748b; text-transform: capitalize;">Sex</div>
+              <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-top: 2px;">${form.sex === 1 ? 'Male' : 'Female'}</div>
+            </div>
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 6px;">
+              <div style="font-size: 8px; color: #64748b;">Presenting Symptom</div>
+              <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-top: 2px; line-height: 1.2;">${cpMap[form.cp] || 'Asymptomatic'}</div>
+            </div>
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 6px;">
+              <div style="font-size: 8px; color: #64748b;">Assessment Type</div>
+              <div style="font-size: 10.5px; font-weight: 700; color: #1e293b; margin-top: 2px; line-height: 1.2;">Cardiovascular Risk Stratification</div>
+            </div>
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 6px;">
+              <div style="font-size: 8px; color: #64748b;">Cohort / Model</div>
+              <div style="font-size: 10.5px; font-weight: 700; color: #1e293b; margin-top: 2px; line-height: 1.2;">UCI Cleveland (14-Biomarker)</div>
+            </div>
+            <div>
+              <div style="font-size: 8px; color: #64748b;">ML Algorithm</div>
+              <div style="font-size: 10.5px; font-weight: 700; color: #1e293b; margin-top: 2px; line-height: 1.2;">Random Forest Ensemble</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2. CARDIOVASCULAR RISK ASSESSMENT ── -->
+        <div style="margin-bottom: 13px;">
+          <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+            2. Cardiovascular Risk Assessment
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px 14px; display: grid; grid-template-columns: 2.1fr 2.3fr 1.6fr; gap: 14px; align-items: center; background: #ffffff;">
+            <!-- Left: Model Estimated Risk -->
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 12px;">
+              <div style="font-size: 8.5px; color: #64748b; font-weight: 600;">Model-Estimated Risk</div>
+              <div style="font-size: 24px; font-weight: 700; color: ${probPercent >= 50 ? '#b91c1c' : '#15803d'}; font-family: monospace; line-height: 1.1; margin-top: 2px;">
+                ${probPercent.toFixed(1)}%
+              </div>
+              <div style="font-size: 11px; font-weight: 700; color: ${probPercent >= 50 ? '#b91c1c' : '#1e293b'}; margin-top: 1px;">
+                ${isHighRisk ? 'Class 1 Detected' : 'Class 0 Detected'}
+              </div>
+              <p style="margin: 4px 0 0; font-size: 8.5px; color: #64748b; line-height: 1.35;">
+                ${isHighRisk 
+                  ? 'The model indicates a very high probability of significant ischemic ST changes and coronary vessel calcification associated with obstructive CAD.' 
+                  : 'Preserved exercise tolerance, normal ST recovery, and clear coronary vessels indicate low probability of obstructive CAD.'}
+              </p>
+            </div>
+
+            <!-- Center: Risk Scale Bar -->
+            <div style="border-right: 1px solid #e2e8f0; padding-right: 12px;">
+              <div style="font-size: 8.5px; color: #64748b; font-weight: 600;">Risk Category</div>
+              <div style="font-size: 12px; font-weight: 700; color: ${riskCategoryColor}; margin-top: 1px;">
+                ${riskCategory}
+              </div>
+
+              <!-- Segmented Scale -->
+              <div style="margin-top: 8px;">
+                <div style="display: flex; height: 7px; border-radius: 2px; overflow: hidden; border: 1px solid #cbd5e1; gap: 1px; background: #f1f5f9;">
+                  <div style="flex: 1; background: ${activeSegmentIndex === 0 ? '#15803d' : '#e2e8f0'};"></div>
+                  <div style="flex: 1; background: ${activeSegmentIndex === 1 ? '#ca8a04' : '#fef08a'};"></div>
+                  <div style="flex: 1; background: ${activeSegmentIndex === 2 ? '#ea580c' : '#fed7aa'};"></div>
+                  <div style="flex: 1; background: ${activeSegmentIndex === 3 ? '#b91c1c' : '#fca5a5'};"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 7px; color: #64748b; margin-top: 3px; font-family: monospace;">
+                  <span style="text-align: center; flex: 1;">Low<br>(&lt; 5%)</span>
+                  <span style="text-align: center; flex: 1;">Intermediate<br>(5 – 20%)</span>
+                  <span style="text-align: center; flex: 1;">High<br>(20 – 50%)</span>
+                  <span style="text-align: center; flex: 1;">Very High<br>(&gt; 50%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Validation Metrics -->
+            <div>
+              <div style="font-size: 8.5px; color: #64748b; font-weight: 600; margin-bottom: 6px;">Model Performance (Validation Metrics)</div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; text-align: center;">
+                <div style="border-right: 1px solid #e2e8f0; padding-right: 8px; flex: 1;">
+                  <div style="font-size: 7.5px; color: #64748b; text-transform: uppercase;">AUC</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #0f172a; font-family: monospace; margin-top: 1px;">0.903</div>
+                </div>
+                <div style="border-right: 1px solid #e2e8f0; padding-right: 8px; padding-left: 8px; flex: 1;">
+                  <div style="font-size: 7.5px; color: #64748b; text-transform: uppercase;">Brier Score</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #0f172a; font-family: monospace; margin-top: 1px;">0.118</div>
+                </div>
+                <div style="padding-left: 8px; flex: 1;">
+                  <div style="font-size: 7.5px; color: #64748b; text-transform: uppercase;">Baseline Rate</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #0f172a; font-family: monospace; margin-top: 1px;">50.6%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 3. CLINICAL FINDINGS TABLE ── -->
+        <div style="margin-bottom: 13px;">
+          <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+            3. Clinical Findings – Biomarkers & Hemodynamics
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 9px; line-height: 1.25; border: 1px solid #e2e8f0;">
             <thead>
-              <tr style="background: #f1f5f9; text-align: left; color: #475569; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.04em;">
-                <th style="padding: 4px 8px; border: 1px solid #e2e8f0; font-weight: 700; width: 32%;">Biomarker / Investigation</th>
-                <th style="padding: 4px 8px; border: 1px solid #e2e8f0; font-weight: 700; width: 26%;">Measured Value</th>
-                <th style="padding: 4px 8px; border: 1px solid #e2e8f0; font-weight: 700; width: 22%;">Clinical Threshold</th>
-                <th style="padding: 4px 8px; border: 1px solid #e2e8f0; font-weight: 700; width: 20%;">Diagnostic Flag</th>
+              <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 8.5px; color: #475569;">
+                <th style="padding: 4px 8px; font-weight: 600; width: 33%; border-right: 1px solid #e2e8f0;">Investigation</th>
+                <th style="padding: 4px 8px; font-weight: 600; width: 25%; border-right: 1px solid #e2e8f0;">Observed Result</th>
+                <th style="padding: 4px 8px; font-weight: 600; width: 23%; border-right: 1px solid #e2e8f0;">Reference / Clinical Threshold</th>
+                <th style="padding: 4px 8px; font-weight: 600; width: 19%;">Interpretation</th>
               </tr>
             </thead>
             <tbody>
-              <tr style="background: #ffffff;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Resting Blood Pressure</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: 700;">${form.trestbps} mmHg</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b;">Normal: &lt; 120 mmHg</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">
-                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 700; color: ${bpStatus.color}; background: ${bpStatus.bg};">${bpStatus.text}</span>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Resting Blood Pressure</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${form.trestbps} mmHg</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Normal: &lt; 120 mmHg</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${bpStatus.color}; background: ${bpStatus.bg}; border: 1px solid ${bpStatus.border};">${bpStatus.text}</span>
                 </td>
               </tr>
-              <tr style="background: #f8fafc;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Exercise Max Heart Rate</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: 700;">${form.thalach} bpm</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b;">Target (85%): ${Math.round(maxTargetHr * 0.85)} bpm</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">
-                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 700; color: ${hrStatus.color}; background: ${hrStatus.bg};">${hrStatus.text}</span>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Exercise Max Heart Rate</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${form.thalach} bpm</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Target (85%): ${target85} bpm</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${hrStatus.color}; background: ${hrStatus.bg}; border: 1px solid ${hrStatus.border};">${hrStatus.text}</span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Total Serum Cholesterol</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${form.chol} mg/dL</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Desirable: &lt; 200 mg/dL</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${cholStatus.color}; background: ${cholStatus.bg}; border: 1px solid ${cholStatus.border};">${cholStatus.text}</span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">ST Depression (oldpeak)</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${form.oldpeak.toFixed(1)} mm</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Ischemia: &ge; 1.0 mm</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${stStatus.color}; background: ${stStatus.bg}; border: 1px solid ${stStatus.border};">${stStatus.text}</span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Coronary Fluoroscopy (ca)</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${Math.round(form.ca)} / 3 Major Vessels</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Normal: 0 calcified</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${caStatus.color}; background: ${caStatus.bg}; border: 1px solid ${caStatus.border};">${caStatus.text}</span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Exercise Angina (exang)</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${form.exang === 1 ? 'Positive (Exertional)' : 'Negative (Absent)'}</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Normal: Absent</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${exangStatus.color}; background: ${exangStatus.bg}; border: 1px solid ${exangStatus.border};">${exangStatus.text}</span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Resting Electrocardiogram</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${restecgMap[form.restecg] || 'Normal'}</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Normal: No LVH</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${restecgStatus.color}; background: ${restecgStatus.bg}; border: 1px solid ${restecgStatus.border};">${restecgStatus.text}</span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">ST Segment Slope Morphology</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${slopeMap[form.slope] || 'Standard'}</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Flat: High Specificity</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${slopeStatus.color}; background: ${slopeStatus.bg}; border: 1px solid ${slopeStatus.border};">${slopeStatus.text}</span>
                 </td>
               </tr>
               <tr style="background: #ffffff;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Total Serum Cholesterol</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: 700;">${form.chol} mg/dL</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b;">Desirable: &lt; 200 mg/dL</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">
-                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 700; color: ${cholStatus.color}; background: ${cholStatus.bg};">${cholStatus.text}</span>
-                </td>
-              </tr>
-              <tr style="background: #f8fafc;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">ST Depression (oldpeak)</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: 700;">${form.oldpeak.toFixed(1)} mm</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b;">Ischemia: &ge; 1.0 mm</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">
-                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 700; color: ${stStatus.color}; background: ${stStatus.bg};">${stStatus.text}</span>
-                </td>
-              </tr>
-              <tr style="background: #ffffff;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Coronary Fluoroscopy (ca)</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: 700;">${Math.round(form.ca)} / 3 Major Vessels</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b;">Normal: 0 Calcified</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">
-                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 700; color: ${caStatus.color}; background: ${caStatus.bg};">${caStatus.text}</span>
-                </td>
-              </tr>
-              <tr style="background: #f8fafc;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Exercise Angina (exang)</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">${form.exang === 1 ? 'Positive (Exertional)' : 'Negative (No pain)'}</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b;">Normal: Absent</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600; color: ${form.exang === 1 ? '#b91c1c' : '#15803d'};">${form.exang === 1 ? 'SYMPTOMATIC' : 'ASYMPTOMATIC'}</td>
-              </tr>
-              <tr style="background: #ffffff;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Resting Electrocardiogram</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;" colspan="2">${restecgMap[form.restecg] || 'Normal'}</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b; font-size: 8.5px;">${form.restecg === 2 ? 'Estes criteria met' : 'Standard'}</td>
-              </tr>
-              <tr style="background: #f8fafc;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">ST Segment Slope Morphology</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;" colspan="2">${slopeMap[form.slope] || 'Standard'}</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; color: #64748b; font-size: 8.5px;">${form.slope === 2 ? 'Flat Ischemia Marker' : 'Diagnostic Parameter'}</td>
-              </tr>
-              <tr style="background: #ffffff;">
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0; font-weight: 600;">Thallium Scintigraphy (thal)</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;" colspan="2">${thalMap[form.thal] || 'Standard'}</td>
-                <td style="padding: 3.5px 8px; border: 1px solid #e2e8f0;">
-                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8.5px; font-weight: 700; color: ${form.thal === 7 ? '#b91c1c' : '#15803d'}; background: ${form.thal === 7 ? '#fef2f2' : '#f0fdf4'};">
-                    ${form.thal === 7 ? 'REVERSIBLE DEFECT' : 'NORMAL PERFUSION'}
-                  </span>
+                <td style="padding: 3.5px 8px; color: #334155; border-right: 1px solid #e2e8f0;">Thallium Scintigraphy (thal)</td>
+                <td style="padding: 3.5px 8px; font-weight: 700; color: #0f172a; border-right: 1px solid #e2e8f0;">${thalMap[form.thal] || 'Standard'}</td>
+                <td style="padding: 3.5px 8px; color: #64748b; border-right: 1px solid #e2e8f0;">Normal: No defect</td>
+                <td style="padding: 3.5px 8px;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 8px; font-weight: 600; color: ${thalStatus.color}; background: ${thalStatus.bg}; border: 1px solid ${thalStatus.border};">${thalStatus.text}</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- 5. SECTION 2: SHAP MARGINAL CONTRIBUTIONS (Zero Text Clipping) -->
-        <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">
-            <span style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a;">
-              2. EXPLAINABLE AI ATTRIBUTION (SHAP MARGINAL INFLUENCE)
-            </span>
-            <span style="font-size: 9px; font-family: monospace; color: #64748b; font-weight: 600;">SHAP VALUE &Delta;</span>
+        <!-- ── 4. MODEL EXPLAINABILITY & FEATURE ATTRIBUTION (SVG CHART) ── -->
+        <div style="margin-bottom: 13px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
+            <div style="font-size: 11px; font-weight: 700; color: #1e293b;">
+              4. Model Explainability & Feature Attribution
+            </div>
+            <div style="font-size: 8px; font-family: monospace; color: #64748b; font-weight: 600;">
+              SHAP VALUE &Delta;
+            </div>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 5px;">
-            ${
-              topDrivers.length > 0
-                ? topDrivers.map((c: any) => {
-                    const isPos = c.shap_value > 0;
-                    const absVal = Math.abs(c.shap_value);
-                    const pct = Math.min(Math.round((absVal / 0.12) * 100), 100);
-                    const label = formatFeatureName(c.feature);
-                    return `
-                      <div style="display: grid; grid-template-columns: 240px 1fr 60px; align-items: center; height: 18px; line-height: 18px; font-size: 9.5px;">
-                        <div style="font-weight: 600; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 18px; height: 18px;">
-                          ${label}
-                        </div>
-                        <div style="height: 10px; background: #f1f5f9; border-radius: 2px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; align-items: center;">
-                          <div style="height: 100%; width: ${Math.max(pct, 8)}%; background: ${isPos ? '#dc2626' : '#16a34a'}; border-radius: 1px;"></div>
-                        </div>
-                        <div style="text-align: right; font-family: monospace; font-weight: 700; color: ${isPos ? '#dc2626' : '#16a34a'}; line-height: 18px; height: 18px;">
-                          ${isPos ? '+' : ''}${c.shap_value.toFixed(3)}
-                        </div>
-                      </div>
-                    `;
-                  }).join('')
-                : '<div style="font-size: 9.5px; color: #64748b;">Biomarker contributions aligned with baseline cohort distribution.</div>'
-            }
+          <div style="font-size: 8.5px; color: #64748b; margin-bottom: 4px;">
+            SHAP-based contribution to this model prediction
           </div>
+
+          <!-- Clean Vector Chart -->
+          <svg width="${chartWidth}" height="${chartHeight}" viewBox="0 0 ${chartWidth} ${chartHeight}" style="display: block; overflow: visible;">
+            <!-- Grid Lines -->
+            <line x1="${labelColWidth}" y1="0" x2="${chartWidth - valueColWidth}" y2="0" stroke="#f1f5f9" stroke-width="1"/>
+            <line x1="${zeroX - halfBarWidth}" y1="0" x2="${zeroX - halfBarWidth}" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+            <line x1="${zeroX - halfBarWidth / 2}" y1="0" x2="${zeroX - halfBarWidth / 2}" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+            <line x1="${zeroX}" y1="0" x2="${zeroX}" y2="100" stroke="#94a3b8" stroke-width="1.2"/>
+            <line x1="${zeroX + halfBarWidth / 2}" y1="0" x2="${zeroX + halfBarWidth / 2}" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+            <line x1="${zeroX + halfBarWidth}" y1="0" x2="${zeroX + halfBarWidth}" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+
+            <!-- Bar Rows -->
+            ${barRowsHtml}
+
+            <!-- Bottom Axis Line -->
+            <line x1="${labelColWidth}" y1="100" x2="${chartWidth - valueColWidth}" y2="100" stroke="#cbd5e1" stroke-width="1"/>
+
+            <!-- Axis Ticks & Labels -->
+            <line x1="${zeroX - halfBarWidth}" y1="100" x2="${zeroX - halfBarWidth}" y2="103" stroke="#94a3b8" stroke-width="1"/>
+            <text x="${zeroX - halfBarWidth}" y="109" font-size="7.5" fill="#64748b" text-anchor="middle" font-family="monospace">-0.10</text>
+
+            <line x1="${zeroX - halfBarWidth / 2}" y1="100" x2="${zeroX - halfBarWidth / 2}" y2="103" stroke="#94a3b8" stroke-width="1"/>
+            <text x="${zeroX - halfBarWidth / 2}" y="109" font-size="7.5" fill="#64748b" text-anchor="middle" font-family="monospace">-0.05</text>
+
+            <line x1="${zeroX}" y1="100" x2="${zeroX}" y2="103" stroke="#475569" stroke-width="1.2"/>
+            <text x="${zeroX}" y="109" font-size="7.5" fill="#0f172a" text-anchor="middle" font-family="monospace" font-weight="600">0</text>
+
+            <line x1="${zeroX + halfBarWidth / 2}" y1="100" x2="${zeroX + halfBarWidth / 2}" y2="103" stroke="#94a3b8" stroke-width="1"/>
+            <text x="${zeroX + halfBarWidth / 2}" y="109" font-size="7.5" fill="#64748b" text-anchor="middle" font-family="monospace">0.05</text>
+
+            <line x1="${zeroX + halfBarWidth}" y1="100" x2="${zeroX + halfBarWidth}" y2="103" stroke="#94a3b8" stroke-width="1"/>
+            <text x="${zeroX + halfBarWidth}" y="109" font-size="7.5" fill="#64748b" text-anchor="middle" font-family="monospace">0.10</text>
+          </svg>
+
+          <p style="margin: 4px 0 0; font-size: 7.5px; color: #64748b; font-style: italic;">
+            Feature attribution describes how the model produced its output; it does not establish causality or independently confirm a diagnosis.
+          </p>
         </div>
 
-        <!-- 6. SECTION 3: MANAGEMENT PLAN -->
+        <!-- ── 5. CLINICAL MANAGEMENT PLAN ── -->
         <div style="margin-bottom: 12px;">
-          <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">
-            3. GUIDELINE-DIRECTED CLINICAL MANAGEMENT PLAN (ACC/AHA STANDARDS)
+          <div style="font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+            5. Clinical Management Plan
           </div>
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px 14px; font-size: 9.5px; color: #1e293b; line-height: 1.45;">
-            ${
-              isHighRisk
-                ? `
-                  <div style="margin-bottom: 4px;">
-                    <strong style="color: #0f172a;">1. URGENT CARDIOLOGY CONSULTATION:</strong> Formal evaluation by an attending cardiologist or rapid-access chest pain clinic recommended.
+          <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; line-height: 1.3; border: 1px solid #e2e8f0;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 8px; color: #475569;">
+                <th style="padding: 4px 8px; font-weight: 600; width: 25%; border-right: 1px solid #e2e8f0;">Category</th>
+                <th style="padding: 4px 8px; font-weight: 600; width: 52%; border-right: 1px solid #e2e8f0;">Recommendation</th>
+                <th style="padding: 4px 8px; font-weight: 600; width: 11%; border-right: 1px solid #e2e8f0;">Priority</th>
+                <th style="padding: 4px 8px; font-weight: 600; width: 12%;">Source / Guideline</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 4px 8px; font-weight: 600; color: #1e293b; border-right: 1px solid #e2e8f0;">Urgent Cardiology Consultation</td>
+                <td style="padding: 4px 8px; color: #334155; border-right: 1px solid #e2e8f0;">
+                  <span style="font-weight: 700; color: #0f172a;">Formal evaluation by</span> an attending cardiologist or rapid-access chest pain clinic recommended.
+                </td>
+                <td style="padding: 4px 8px; border-right: 1px solid #e2e8f0;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 7.5px; font-weight: 600; color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca;">High</span>
+                </td>
+                <td style="padding: 4px 8px; color: #64748b;">—</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 4px 8px; font-weight: 600; color: #1e293b; border-right: 1px solid #e2e8f0;">Anatomical Coronary Imaging</td>
+                <td style="padding: 4px 8px; color: #334155; border-right: 1px solid #e2e8f0;">
+                  Recommend coronary CTA or invasive catheterization to evaluate stenosis across calcified vessels. Further imaging to confirm extent of CAD.
+                </td>
+                <td style="padding: 4px 8px; border-right: 1px solid #e2e8f0;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 7.5px; font-weight: 600; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;">Recommended</span>
+                </td>
+                <td style="padding: 4px 8px; color: #64748b;">—</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                <td style="padding: 4px 8px; font-weight: 600; color: #1e293b; border-right: 1px solid #e2e8f0; vertical-align: top;">Guideline-Directed Medical Therapy (GDMT)</td>
+                <td style="padding: 4px 8px; color: #334155; border-right: 1px solid #e2e8f0;">
+                  <div style="line-height: 1.35;">
+                    &bull; Blood Pressure: ACEi/ARB or CCB targeting SBP &lt; 130 mmHg.<br>
+                    &bull; Lipid Lowering: High-intensity statin (Atorvastatin 40&ndash;80mg or Rosuvastatin 20&ndash;40mg) targeting &ge; 50% LDL-C reduction.<br>
+                    &bull; Antiplatelet: Low-dose Aspirin (81mg daily) if no contraindications.
                   </div>
-                  <div style="margin-bottom: 4px;">
-                    <strong style="color: #0f172a;">2. ANATOMICAL CORONARY IMAGING:</strong> Recommend Coronary CTA or Invasive Catheterization to evaluate stenosis across calcified vessels.
-                  </div>
-                  <div style="margin-bottom: 4px;">
-                    <strong style="color: #0f172a;">3. GUIDELINE-DIRECTED MEDICAL THERAPY (GDMT):</strong>
-                    <div style="padding-left: 10px; margin-top: 1px; color: #334155;">
-                      &bull; Blood Pressure: Titrate antihypertensives (ACEi/ARB or CCB) targeting SBP &lt; 130 mmHg per AHA/ACC guidelines.<br>
-                      &bull; Lipid Lowering: Initiate high-intensity statin therapy (Atorvastatin 40&ndash;80mg or Rosuvastatin 20&ndash;40mg) targeting &ge; 50% LDL-C reduction.<br>
-                      &bull; Antiplatelet: Low-dose Aspirin (81mg daily) indicated upon anatomical confirmation of vascular stenosis.
-                    </div>
-                  </div>
-                  <div>
-                    <strong style="color: #0f172a;">4. PATIENT COUNSELING & RED FLAGS:</strong> Counseled on cardinal symptoms of acute coronary syndrome (substernal crushing pressure, radiation to arm/jaw, diaphoresis) with instructions to call 911 immediately.
-                  </div>
-                `
-                : `
-                  <div style="margin-bottom: 4px;">
-                    <strong style="color: #0f172a;">1. PRIMARY PREVENTION SURVEILLANCE:</strong> Continue annual cardiovascular screening, resting blood pressure, and fasting lipid surveillance.
-                  </div>
-                  <div style="margin-bottom: 4px;">
-                    <strong style="color: #0f172a;">2. LIFESTYLE & AEROBIC TARGETS:</strong> Reinforce guideline targets of &ge; 150 minutes/week of moderate-intensity aerobic physical activity.
-                  </div>
-                  <div>
-                    <strong style="color: #0f172a;">3. SAFETY NETTING:</strong> Instructed patient to report any new or progressive exertional chest heaviness, shortness of breath, or palpitations.
-                  </div>
-                `
-            }
-          </div>
+                </td>
+                <td style="padding: 4px 8px; border-right: 1px solid #e2e8f0; vertical-align: top;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 7.5px; font-weight: 600; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;">Initiate / Optimize</span>
+                </td>
+                <td style="padding: 4px 8px; color: #64748b; vertical-align: top;">—</td>
+              </tr>
+              <tr style="background: #ffffff;">
+                <td style="padding: 4px 8px; font-weight: 600; color: #1e293b; border-right: 1px solid #e2e8f0;">Patient Counseling & Red Flags</td>
+                <td style="padding: 4px 8px; color: #334155; border-right: 1px solid #e2e8f0;">
+                  Counsel on cardiac symptoms (chest pain, radiation to arm/jaw, dyspnea, diaphoresis) with instructions to seek emergency care (call 911) if symptoms occur.
+                </td>
+                <td style="padding: 4px 8px; border-right: 1px solid #e2e8f0;">
+                  <span style="display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 7.5px; font-weight: 600; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;">Important</span>
+                </td>
+                <td style="padding: 4px 8px; color: #64748b;">—</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- 7. FOOTER AUTHENTICATION & SIGN-OFF (Guaranteed visible within A4 height) -->
-      <div style="border-top: 1.5px solid #cbd5e1; padding-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 9px; color: #475569;">
+      <!-- ── FOOTER (3 COLUMNS) ── -->
+      <div style="border-top: 1px solid #cbd5e1; padding-top: 8px; display: grid; grid-template-columns: 1.4fr 1.3fr 1.6fr; gap: 12px; font-size: 7.5px; color: #475569; line-height: 1.35;">
         <div>
-          <div style="font-weight: 700; color: #0f172a;">ATTENDING PHYSICIAN SIGN-OFF: __________________________________________________</div>
-          <div style="margin-top: 3px; color: #64748b; font-size: 8.5px;">Division of Cardiology · Reviewing Clinician Signature & NPI License</div>
+          <div style="font-weight: 700; color: #1e293b;">Model & Report Information</div>
+          <div><strong>Model:</strong> Random Forest Ensemble</div>
+          <div><strong>Dataset:</strong> UCI Cleveland (14-Biomarker)</div>
+          <div><strong>Explainability:</strong> SHAP (TreeExplainer)</div>
         </div>
-        <div style="text-align: right; font-family: monospace; font-size: 8.5px; line-height: 1.35;">
-          <div>DATE: ${today}</div>
-          <div style="color: #94a3b8; font-size: 7.5px;">AUTHENTICATED EHR RECORD</div>
+        <div>
+          <div><strong>Report Generated:</strong> ${dateFormatted} ${timeFormatted}</div>
+          <div><strong>Report ID:</strong> ${orderId}</div>
+          <div><strong>Version:</strong> v1.0</div>
+        </div>
+        <div>
+          <div style="font-weight: 700; color: #1e293b;">Clinical Decision Support Disclaimer</div>
+          <div style="color: #64748b;">
+            This report is for clinical decision support and educational use only. It does not replace professional medical judgment. Always correlate with clinical history, examination, and additional diagnostic testing.
+          </div>
         </div>
       </div>
 
     </div>
   `;
 
-  // Render HTML in hidden DOM element exactly sized to A4 width
+  // Render in hidden container
   const container = document.createElement('div');
   container.style.position = 'fixed';
   container.style.top = '-9999px';
@@ -389,11 +580,11 @@ export async function downloadClinicalReportPdf(
   document.body.appendChild(container);
 
   try {
-    // Wait for DOM layout
+    // Wait for layout
     await new Promise((resolve) => setTimeout(resolve, 80));
 
     const canvas = await html2canvas(container, {
-      scale: 2, // 2x = 300 DPI high-definition output
+      scale: 2.5, // 2.5x scale = ultra-sharp print typography
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
@@ -411,10 +602,9 @@ export async function downloadClinicalReportPdf(
       compress: true,
     });
 
-    // 210 x 297 mm exact A4 fit
     pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
 
-    const filename = `Cardiology_Report_${form.age}yo_${isHighRisk ? 'HighRisk' : 'LowRisk'}_${today.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    const filename = `Cardiology_Consultation_Report_${form.age}yo_${isHighRisk ? 'HighRisk' : 'LowRisk'}_${orderId}.pdf`;
     pdf.save(filename);
   } catch (err) {
     if (container.parentNode) {

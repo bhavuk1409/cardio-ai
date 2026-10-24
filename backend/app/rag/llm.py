@@ -22,16 +22,17 @@ SYSTEM_PROMPT = """You are a cardiovascular health information assistant for an 
 Your role is to help users understand cardiovascular health topics using the retrieved evidence passages provided below.
 
 IMPORTANT RULES:
-1. Base factual claims on the retrieved passages. Cite the source title/organization when using specific facts.
+1. Base factual medical claims on the retrieved passages. Cite the source title/organization when using specific facts.
 2. Distinguish between source-supported facts and your general explanatory wording.
 3. Do NOT provide personalized medical advice, diagnoses, or treatment recommendations.
 4. Do NOT alter, override, or reinterpret any machine learning model predictions or probabilities shown to the user.
-5. If the retrieved context is insufficient to answer a question, say so explicitly.
-6. Do NOT fabricate citations, URLs, statistics, or medical facts.
-7. Recommend professional medical consultation for personal health concerns.
-8. If a user mentions an emergency or urgent symptoms, advise them to call emergency services immediately.
-9. This is an educational tool, not a clinical decision system.
-10. Keep responses concise, clear, and accessible to a general audience.
+5. If the retrieved context is insufficient to answer a factual clinical question, say so explicitly.
+6. Maintain conversational continuity across turns. You remember earlier questions, patient details, and dialogue context shared in this conversation.
+7. Do NOT fabricate citations, URLs, statistics, or medical facts.
+8. Recommend professional medical consultation for personal health concerns.
+9. If a user mentions an emergency or urgent symptoms, advise them to call emergency services immediately.
+10. This is an educational tool, not a clinical decision system.
+11. Keep responses concise, clear, and accessible to a general audience.
 """
 
 
@@ -92,22 +93,36 @@ class LLMService:
         context = format_context(passages)
         sources_used = list({p["url"] for p in passages})
 
-        full_prompt = (
+        current_prompt = (
             f"{context}\n\n"
             f"USER QUESTION: {query}\n\n"
-            "Please answer using the retrieved evidence above. "
-            "Cite source names when making specific factual claims."
+            "Please answer the user's question. For clinical claims, base them on the retrieved evidence above and cite sources. "
+            "Use previous turns in the dialogue to resolve follow-ups, references, and ongoing patient context."
         )
+
+        # Assemble conversation messages with system prompt & memory
+        chat_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+        # Append previous conversation turns for conversational memory (up to last 10 messages)
+        if conversation_history:
+            for turn in conversation_history[-10:]:
+                role = turn.get("role")
+                content = turn.get("content")
+                if role in ("user", "assistant") and content:
+                    chat_messages.append({"role": role, "content": content})
+
+        # Append current user prompt with context
+        chat_messages.append({"role": "user", "content": current_prompt})
 
         # Try Groq
         try:
-            return self._call_groq(full_prompt, sources_used)
+            return self._call_groq(chat_messages, sources_used)
         except Exception as exc:
             logger.error("Groq call failed: %s", exc)
 
         # Try Ollama fallback
         try:
-            return self._call_ollama(full_prompt, sources_used)
+            return self._call_ollama(chat_messages, sources_used)
         except Exception as exc2:
             logger.error("Ollama fallback failed: %s", exc2)
             return {
@@ -117,15 +132,12 @@ class LLMService:
                 "error": f"LLM generation failed: {exc2}",
             }
 
-    def _call_groq(self, prompt: str, sources_used: List[str]) -> Dict[str, Any]:
+    def _call_groq(self, messages: List[Dict], sources_used: List[str]) -> Dict[str, Any]:
         from groq import Groq
 
         client = Groq(api_key=settings.groq_api_key)
         chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
+            messages=messages,
             model=settings.groq_model,
             temperature=0.2,
             max_tokens=1024,
@@ -139,22 +151,22 @@ class LLMService:
             "error": None,
         }
 
-    def _call_ollama(self, prompt: str, sources_used: List[str]) -> Dict[str, Any]:
+    def _call_ollama(self, messages: List[Dict], sources_used: List[str]) -> Dict[str, Any]:
         import httpx
 
         payload = {
             "model": settings.ollama_model,
-            "prompt": f"{SYSTEM_PROMPT}\n\n{prompt}",
+            "messages": messages,
             "stream": False,
         }
         resp = httpx.post(
-            f"{settings.ollama_base_url}/api/generate",
+            f"{settings.ollama_base_url}/api/chat",
             json=payload,
             timeout=60,
         )
         resp.raise_for_status()
         data = resp.json()
-        answer = data.get("response", "").strip()
+        answer = data.get("message", {}).get("content", "").strip()
         logger.info("Ollama response received (%d chars).", len(answer))
         return {
             "answer": answer,

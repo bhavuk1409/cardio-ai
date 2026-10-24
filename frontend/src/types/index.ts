@@ -89,22 +89,26 @@ export interface KnowledgeSource {
   chunks_count?: number;
 }
 
-// Sample dataset records for demo
-export const SAMPLE_RECORDS: Array<{ label: string; data: PredictionInput }> = [
+// Sample dataset records from UCI Cleveland heart disease cohort
+export const SAMPLE_RECORDS: Array<{ label: string; data: PredictionInput; risk: 'HIGH' | 'LOW' }> = [
   {
-    label: 'Sample A — Male, 63, Typical Angina (Class 1 expected)',
-    data: { age: 63, sex: 1, cp: 1, trestbps: 145, chol: 233, fbs: 1, restecg: 2, thalach: 150, exang: 0, oldpeak: 2.3, slope: 3, ca: 0, thal: 6 },
+    label: 'Case A — Male, 67, Asymptomatic (Severe CAD)',
+    risk: 'HIGH',
+    data: { age: 67, sex: 1, cp: 4, trestbps: 160, chol: 286, fbs: 0, restecg: 2, thalach: 108, exang: 1, oldpeak: 1.5, slope: 2, ca: 3, thal: 3 },
   },
   {
-    label: 'Sample B — Female, 57, Non-Anginal Pain (Class 0 expected)',
-    data: { age: 57, sex: 0, cp: 3, trestbps: 128, chol: 303, fbs: 0, restecg: 0, thalach: 159, exang: 0, oldpeak: 0.0, slope: 1, ca: 1, thal: 3 },
+    label: 'Case B — Female, 57, Normal Flow (Low Risk)',
+    risk: 'LOW',
+    data: { age: 57, sex: 0, cp: 4, trestbps: 120, chol: 354, fbs: 0, restecg: 0, thalach: 163, exang: 1, oldpeak: 0.6, slope: 1, ca: 0, thal: 3 },
   },
   {
-    label: 'Sample C — Male, 52, Asymptomatic (Class 1 expected)',
-    data: { age: 52, sex: 1, cp: 4, trestbps: 172, chol: 199, fbs: 1, restecg: 0, thalach: 162, exang: 0, oldpeak: 0.5, slope: 1, ca: 0, thal: 3 },
+    label: 'Case C — Male, 53, Reversible Defect (Ischemic)',
+    risk: 'HIGH',
+    data: { age: 53, sex: 1, cp: 4, trestbps: 140, chol: 203, fbs: 1, restecg: 2, thalach: 155, exang: 1, oldpeak: 3.1, slope: 3, ca: 0, thal: 7 },
   },
   {
-    label: 'Sample D — Female, 41, Atypical Angina (Class 0 expected)',
+    label: 'Case D — Female, 41, Clear Scan (Healthy)',
+    risk: 'LOW',
     data: { age: 41, sex: 0, cp: 2, trestbps: 130, chol: 204, fbs: 0, restecg: 2, thalach: 172, exang: 0, oldpeak: 1.4, slope: 1, ca: 0, thal: 3 },
   },
 ];

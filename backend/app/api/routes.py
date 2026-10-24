@@ -200,15 +200,25 @@ async def chat(body: ChatRequest):
     passages = []
     retrieval_available = retrieval_service.ready
 
+    # Conversational memory: unpack previous turns
+    history_dicts = [h.model_dump() for h in body.history] if body.history else []
+
+    # Contextualize retrieval query for short pronoun-heavy follow-ups (e.g. "how to treat it?")
+    retrieval_query = body.query
+    if history_dicts and len(body.query.split()) < 6:
+        last_user = next((h["content"] for h in reversed(history_dicts) if h["role"] == "user"), None)
+        if last_user:
+            retrieval_query = f"{last_user} {body.query}"
+
     if retrieval_available:
         try:
-            passages = retrieval_service.retrieve(body.query, body.top_k)
+            passages = retrieval_service.retrieve(retrieval_query, body.top_k)
         except Exception as exc:
             logger.error("Retrieval error in chat: %s", exc)
             retrieval_available = False
 
     llm_available = llm_service.ready
-    llm_result = llm_service.generate(body.query, passages)
+    llm_result = llm_service.generate(body.query, passages, conversation_history=history_dicts)
 
     return ChatResponse(
         query=body.query,

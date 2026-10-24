@@ -88,7 +88,7 @@ class ExplainResponse(BaseModel):
 # ──────────────────────────────────────────────
 
 class RetrieveRequest(BaseModel):
-    query: str = Field(..., min_length=3, max_length=1000)
+    query: str = Field(..., min_length=1, max_length=1000)
     top_k: Optional[int] = Field(default=5, ge=1, le=20)
 
 
@@ -107,9 +107,15 @@ class RetrieveResponse(BaseModel):
     n_retrieved: int
 
 
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="Role of the sender: 'user' or 'assistant'")
+    content: str = Field(..., description="Content of the message")
+
+
 class ChatRequest(BaseModel):
-    query: str = Field(..., min_length=3, max_length=2000)
+    query: str = Field(..., min_length=1, max_length=2000)
     top_k: Optional[int] = Field(default=5, ge=1, le=20)
+    history: Optional[List[ChatMessage]] = Field(default=None, description="Previous conversation turns for conversational memory")
 
 
 class ChatResponse(BaseModel):

@@ -6,8 +6,24 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     ...options,
   });
   if (!resp.ok) {
-    const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-    throw new Error(err.detail || `HTTP ${resp.status}`);
+    const errData = await resp.json().catch(() => null);
+    let errMsg = `HTTP ${resp.status}`;
+    if (errData) {
+      if (typeof errData.detail === 'string') {
+        errMsg = errData.detail;
+      } else if (Array.isArray(errData.detail)) {
+        errMsg = errData.detail
+          .map((d: any) => d.msg || (typeof d === 'string' ? d : JSON.stringify(d)))
+          .join('; ');
+      } else if (typeof errData.message === 'string') {
+        errMsg = errData.message;
+      } else if (typeof errData.error === 'string') {
+        errMsg = errData.error;
+      } else if (typeof errData === 'string') {
+        errMsg = errData;
+      }
+    }
+    throw new Error(errMsg);
   }
   return resp.json();
 }
@@ -25,7 +41,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ query, top_k }),
     }),
-  chat: (query: string, top_k = 5) =>
-    apiFetch<any>('/chat', { method: 'POST', body: JSON.stringify({ query, top_k }) }),
+  chat: (query: string, top_k = 5, history?: { role: string; content: string }[]) =>
+    apiFetch<any>('/chat', { method: 'POST', body: JSON.stringify({ query, top_k, history }) }),
   knowledgeSources: () => apiFetch<any>('/knowledge/sources'),
 };

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Header, AppMode } from './components/Header';
-import { Colophon } from './components/Colophon';
 import { PredictorView } from './components/PredictorView';
 import { AssistantView } from './components/AssistantView';
 import { BenchmarkView } from './components/BenchmarkView';
@@ -18,15 +17,16 @@ export default function App() {
   return (
     <>
       <Header mode={mode} onMode={setMode} />
-      <main className="w-full">
+      <main style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <AnimatePresence mode="wait">
           {mode === 'predict' && (
             <motion.div
               key="predict"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              style={{ height: '100%' }}
             >
               <PredictorView onConsultAI={handleConsultAI} />
             </motion.div>
@@ -35,10 +35,11 @@ export default function App() {
           {mode === 'assistant' && (
             <motion.div
               key="assistant"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              style={{ height: '100%' }}
             >
               <AssistantView initialQuery={aiPrompt} />
             </motion.div>
@@ -47,17 +48,17 @@ export default function App() {
           {mode === 'benchmark' && (
             <motion.div
               key="benchmark"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              style={{ height: '100%' }}
             >
               <BenchmarkView />
             </motion.div>
           )}
         </AnimatePresence>
       </main>
-      <Colophon />
     </>
   );
 }

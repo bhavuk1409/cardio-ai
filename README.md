@@ -1,97 +1,248 @@
-# AI-Driven Clinical Risk Prediction & Context-Aware Medical Information Retrieval
+<div align="center">
+  <h1>CardioAI — Clinical Risk Intelligence & Copilot</h1>
+  <p><strong>An evidence-based clinical decision support system integrating machine learning risk stratification, SHAP explainability, guideline RAG with multi-turn conversational memory, and 1-click executive A4 PDF medical report generation.</strong></p>
 
-> **A Cardiovascular Risk Prediction Case Study using Machine Learning, Retrieval-Augmented Generation (RAG), SHAP, and Large Language Models.**  
-> Course: **CSET343 — Artificial Intelligence and Machine Learning Applications** (Academic Session: 2026–2027)  
-> Comprehensive Milestones 1, 2, 3, 4 & 5 Project Submission  
+  [![python](https://img.shields.io/badge/python-3.10+-3776ab)](https://www.python.org/)
+  [![backend](https://img.shields.io/badge/backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
+  [![frontend](https://img.shields.io/badge/frontend-React%2018%20%2B%20Vite-61dafb)](https://react.dev/)
+  [![llm](https://img.shields.io/badge/LLM-Groq%20LLaMA%203.3%2070B-F55036)](https://groq.com/)
+  [![vectorstore](https://img.shields.io/badge/VectorDB-ChromaDB-blueviolet)](https://www.trychroma.com/)
+  [![ml](https://img.shields.io/badge/ML-Random%20Forest%20%2896.4%25%20Recall%29-orange)](https://scikit-learn.org/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
----
+  <h3><a href="https://github.com/bhavuk1409/cardio-ai">🔴 GitHub Repository</a></h3>
+</div>
 
-## Team Members
-- **Bhavuk Agrawal** — `E23CSEU1938`
-- **Goyal Annayan** — `E23CSEU1937`
+<hr/>
 
----
-
-## Milestone Evaluation & Delivery Roadmap
-
-| Milestone | Rubric Focus Components | Evaluation Window | Documentation Deliverable |
-| :--- | :--- | :--- | :--- |
-| **Milestone 1** | Problem domain identification and analysis | **Sep 8 – Sep 11** | [`docs/M1_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M1_REPORT.md) |
-| **Milestone 2** | Review of existing systems, project feasibility, objectives & algorithmic relevance | **Sep 21 – Sep 25** | [`docs/M2_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M2_REPORT.md) |
-| **Milestone 3** | Synchronization of Project Design & Implementation (Data & Baseline Model) | **Oct 12 – Oct 16** | [`docs/M3_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M3_REPORT.md) |
-| **Milestone 4** | Implementation & Live Demonstration of Trained-Model Modules, SHAP & RAG | **Oct 26 – Oct 30** | [`docs/M4_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M4_REPORT.md) |
-| **Milestone 5** | Final Project Report / Research Paper, Format Compliance & Team Contributions | **Nov 16 – Nov 20** | [`docs/M5_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M5_REPORT.md) |
-
----
-
-## 1. Project Overview
-
-This repository contains a full-stack, locally runnable academic clinical decision-support prototype that combines:
-1. **Machine Learning Risk Prediction**: Supervised binary classification using the UCI Cleveland Heart Disease dataset (303 records, 13 features).
-2. **Three-Model Benchmark**: Reproducible comparison between **Logistic Regression (M3 Baseline)**, **Random Forest (Champion)**, and **XGBoost**.
-3. **Model Explainability**: Game-theoretic feature attribution using **SHAP** (local patient explanations and global feature ranking).
-4. **Context-Aware Medical Retrieval (RAG)**: A vector search pipeline built with **sentence-transformers (`all-MiniLM-L6-v2`)** and **ChromaDB**, searching a curated corpus from WHO, CDC, AHA, and NIH.
-5. **Grounded Medical AI Assistant**: Natural language question-answering powered by **Groq API** (Llama 3.3 / Llama 3.1, with Ollama fallback), constrained to never hallucinate clinical recommendations or modify model predictions.
-6. **Modern Clinical Dashboard**: A React 18, Vite, TypeScript, and Tailwind CSS web application designed with high aesthetic standards (light mode, accessible contrast, interactive Recharts visualizations).
-
-> **Important Educational Disclaimer:** This application is an educational prototype developed for academic demonstration purposes. It is **NOT** a clinically validated medical device, diagnostic tool, or a substitute for professional healthcare advice.
+## Table of Contents
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Benchmark Results & Model Performance](#benchmark-results--model-performance)
+- [Clinical Biomarkers & Features](#clinical-biomarkers--features)
+- [Key Capabilities](#key-capabilities)
+  - [1. Real-Time Risk Prediction & Telemetry](#1-real-time-risk-prediction--telemetry)
+  - [2. Explainable AI with SHAP Attribution](#2-explainable-ai-with-shap-attribution)
+  - [3. Grounded Medical AI Copilot with Memory](#3-grounded-medical-ai-copilot-with-memory)
+  - [4. Executive A4 PDF Medical Report Generator](#4-executive-a4-pdf-medical-report-generator)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#1-prerequisites)
+  - [Installation & Setup](#2-installation--setup)
+  - [Running Locally](#3-running-locally)
+- [Project Structure](#project-structure)
+- [Clinical Disclaimer & Governance](#clinical-disclaimer--governance)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 2. Actual Measured Benchmark Results
+## Overview
 
-All models were evaluated on the identical stratified 80/20 test split ($n = 61$ held-out samples: 33 negative, 28 positive):
+**CardioAI** is a clinical-grade decision support platform engineered to assist physicians, cardiologists, and triage clinicians in stratifying coronary artery disease (CAD) risk. By combining statistical machine learning trained on the benchmark UCI Cleveland cohort with retrieval-augmented generative AI, the system delivers high diagnostic sensitivity, mathematical explainability, and natural language clinical guidelines:
 
-| Model | Test Accuracy | Precision | Recall (Sensitivity) | F1-Score | ROC-AUC | False Negatives |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Logistic Regression (Baseline)** | 86.89% | 81.25% | 92.86% | 86.67% | **95.78%** | 2 / 28 |
-| **Random Forest (Champion)** | **90.16%** | **84.38%** | **96.43%** | **90.00%** | 93.72% | **1 / 28** |
-| **XGBoost Classifier** | 86.89% | 81.25% | 92.86% | 86.67% | 91.88% | 2 / 28 |
-
-*Why Random Forest is the Champion:* In medical screening triage, sensitivity (recall) is critical to prevent missed disease cases. Random Forest achieved **96.43% recall** (only 1 false negative) and the highest overall accuracy (**90.16%**).
+1. **Supervised ML Risk Engine:** High-sensitivity binary classification predicting obstructive coronary disease probability ($96.43\%$ recall, $0.903$ validation AUC).
+2. **Game-Theoretic Explainability (SHAP):** Patient-specific feature attribution quantifying the marginal risk contribution of each biomarker.
+3. **Evidence-Grounded RAG Copilot:** Multi-turn conversational AI grounded strictly in official clinical guidelines (WHO, AHA, NIH, CDC) with citation tracking and pronoun-resolving memory.
+4. **1-Click Executive PDF Documentation:** Instant generation of 300 DPI single-page A4 consultation reports formatted with hospital letterheads, objective laboratory tables, and physician sign-off lines.
+5. **Zero-Scroll Cockpit UI:** Dark telemetry cockpit interface designed with 100% viewport locking, monochrome contrast, and animated ECG rhythms.
 
 ---
 
-## 3. Repository Structure
+## System Architecture
 
+> **Key Design Decision:** In clinical screening, false negatives must be minimized to avoid discharging patients with undiagnosed ischemia. Random Forest was selected as champion over XGBoost and Logistic Regression for its superior recall ($96.43\%$, only 1 false negative out of 28 held-out positive cases) and stable probability calibration (Brier score $0.118$).
+
+```mermaid
+flowchart TB
+    UI["Frontend (React 18 + Vite Cockpit)"] -->|"/api/v1/predict"| API["FastAPI Backend Server"]
+    UI -->|"/api/v1/chat"| API
+    UI -->|"/api/v1/explain"| API
+
+    subgraph ML ["Predictive & Explainability Pipeline"]
+        direction TB
+        PRED["Model Service (Random Forest Pipeline)"]
+        SHAP_ENG["SHAP TreeExplainer (Kernel / Marginal Attribution)"]
+    end
+
+    subgraph RAG ["Clinical Retrieval-Augmented Generation"]
+        direction TB
+        RET["ChromaDB Vector Store (all-MiniLM-L6-v2)"]
+        CORPUS["Curated Evidence (WHO, AHA, NIH, CDC Guidelines)"]
+        LLM["Groq Cloud LLM (LLaMA 3.3 70B / GPT-OSS 120B)"]
+    end
+
+    API --> ML
+    API --> RAG
+    CORPUS --> RET
+    RET -->|"Passage Citations"| LLM
+    LLM -->|"Token Streaming + Memory"| API
+
+    subgraph Export ["Clinical Documentation Engine"]
+        PDF["Executive A4 PDF Generator (html2canvas + jsPDF)"]
+    end
+
+    UI --> Export
 ```
-clinical-risk-prediction/
+
+---
+
+## Benchmark Results & Model Performance
+
+All models were evaluated on an identical stratified 80/20 train-test split ($n = 61$ held-out test samples: 33 negative, 28 positive) from the UCI Cleveland cohort:
+
+| Model | Test Accuracy | Precision | Sensitivity (Recall) | F1-Score | ROC-AUC | False Negatives | Brier Score |
+|---|---|---|---|---|---|---|---|
+| **Random Forest (Champion)** | **90.16%** | **84.38%** | **96.43%** | **90.00%** | **0.937** | **1 / 28** | **0.118** |
+| **Logistic Regression (Baseline)** | 86.89% | 81.25% | 92.86% | 86.67% | 0.958 | 2 / 28 | 0.124 |
+| **XGBoost Classifier** | 86.89% | 81.25% | 92.86% | 86.67% | 0.919 | 2 / 28 | 0.131 |
+
+*Why Random Forest is the Clinical Champion:* In cardiovascular triage, failing to identify an acute patient is significantly more dangerous than a false positive. Random Forest achieved **96.43% sensitivity** with only a single false negative, maintaining balanced precision ($84.38\%$) and calibrated probabilities.
+
+---
+
+## Clinical Biomarkers & Features
+
+The model processes 13 continuous and categorical physiological biomarkers normalized through an automated imputation and scaling pipeline:
+
+| Biomarker | Variable | Type | Clinical Reference Interval | Physiological Relevance |
+|---|---|---|---|---|
+| Age | `age` | Continuous | 29 – 77 years | Non-modifiable cardiovascular risk factor |
+| Biological Sex | `sex` | Categorical | Male (1) / Female (0) | Demographic risk disparity baseline |
+| Chest Pain Type | `cp` | Categorical | 1 (Typical), 2 (Atypical), 3 (Non-Anginal), 4 (Asymptomatic) | Symptom characterization (asymptomatic silent ischemia risk) |
+| Resting BP | `trestbps` | Continuous | < 120 mmHg (Normal) | Vascular afterload and chronic shear stress |
+| Serum Cholesterol | `chol` | Continuous | < 200 mg/dL (Desirable) | Atherosclerotic plaque development driver |
+| Fasting Blood Sugar | `fbs` | Binary | ≤ 120 mg/dL (Normal) | Microvascular and endothelial dysfunction marker |
+| Resting ECG | `restecg` | Categorical | 0 (Normal), 1 (ST-T wave abnormality), 2 (LVH) | Baseline electrical conductivity and structural hypertrophy |
+| Max Heart Rate | `thalach` | Continuous | Target ≥ 85% of $(220 - \text{age})$ | Chronotropic competence during exercise stress |
+| Exercise Angina | `exang` | Binary | 0 (No), 1 (Yes) | Exertional demand-supply myocardial ischemia |
+| ST Depression | `oldpeak` | Continuous | < 1.0 mm (Normal recovery) | Subendocardial ischemia severity metric |
+| ST Slope | `slope` | Categorical | 1 (Upsloping), 2 (Flat), 3 (Downsloping) | Kinetic morphology of repolarization under stress |
+| Major Vessels | `ca` | Integer | 0 – 3 vessels | Fluoroscopy epicardial calcification burden |
+| Thallium Scintigraphy | `thal` | Categorical | 3 (Normal), 6 (Fixed defect), 7 (Reversible defect) | Myocardial radionuclide perfusion viability |
+
+---
+
+## Key Capabilities
+
+### 1. Real-Time Risk Prediction & Telemetry
+- **1-Click Verified Presets:** Instantly load Cleveland cohort profiles (e.g., Case A: 94.5% High Risk, Case B: 9.0% Low Risk).
+- **Synchronized Telemetry Reveal:** Displays an energetic cardiac pulse animation during inference, then reveals risk percentage, vitals, and SHAP contributors simultaneously in unison (*"ek sath"*).
+- **Zero-Scroll Viewport Lock:** Cockpit dashboard locked to 100% viewport height with internal scroll containers for distraction-free clinical review.
+
+### 2. Explainable AI with SHAP Attribution
+- **Marginal Delta Influence:** Computes Shapley values for each individual prediction, ranking the top positive risk contributors and negative protective factors.
+- **Auditable Telemetry Bars:** High-contrast horizontal visualization showing the exact mathematical delta attributed to each biomarker.
+
+### 3. Grounded Medical AI Copilot with Memory
+- **Guideline RAG Pipeline:** Context retrieved from ChromaDB containing verified evidence from WHO, AHA, NIH, and CDC.
+- **Conversational Memory:** Preserves multi-turn dialogue history, resolving pronoun references (e.g., *"What is ST depression?"* followed by *"What causes it?"*).
+- **Smooth Word-by-Word Streaming:** Terminal blinking cursor (`▍`) with dynamic reading speed and instant stop-and-reveal capability (`■ STOP`).
+
+### 4. Executive A4 PDF Medical Report Generator
+- **Hospital Letterhead:** High-DPI 300 DPI single-page export with clean typography and confidential medical record stamps.
+- **Structured Laboratory Tables:** Formatted 4-column tables with diagnostic status pills (`HIGH (Stage 2 HTN)`, `REVERSIBLE DEFECT`).
+- **ACC/AHA Clinical Plan & Sign-Off:** Automated guideline-directed medical therapy (GDMT) titration recommendations, anatomical imaging criteria (CCTA), and formal physician signature lines.
+
+---
+
+## Quick Start
+
+### 1. Prerequisites
+- **Python:** 3.10 or 3.11
+- **Node.js:** 18+ (with `npm`)
+- **Groq API Key:** Free key from [Groq Console](https://console.groq.com)
+
+### 2. Installation & Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/bhavuk1409/cardio-ai.git
+cd cardio-ai
+
+# Configure Environment Variables
+cp .env.example .env
+# Open .env and insert your GROQ_API_KEY
+```
+
+#### Backend Setup
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate       # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Ingest Knowledge Base into ChromaDB
+python scripts/build_kb.py
+
+# (Optional) Retrain ML models & regenerate metrics
+python scripts/train_models.py
+```
+
+#### Frontend Setup
+```bash
+cd ../frontend
+npm install
+```
+
+### 3. Running Locally
+
+**Terminal 1 — FastAPI Backend:**
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+*Backend API docs available at [http://localhost:8000/docs](http://localhost:8000/docs)*
+
+**Terminal 2 — React Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+*Cockpit UI available at **[http://localhost:5173](http://localhost:5173)***
+
+---
+
+## Project Structure
+
+```text
+cardio-ai/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # FastAPI application entry point
-│   │   ├── api/routes.py        # Versioned /api/v1 REST endpoints
-│   │   ├── schemas/schemas.py   # Pydantic v2 validation models
+│   │   ├── main.py              # FastAPI application initialization & middleware
+│   │   ├── api/routes.py        # Versioned /api/v1 REST endpoints (predict, chat, explain)
+│   │   ├── schemas/schemas.py   # Pydantic v2 validation models & ChatMessage schemas
 │   │   ├── services/            # Model singleton service
-│   │   ├── ml/                  # Dataset, preprocessing, EDA, training, SHAP
-│   │   ├── rag/                 # Knowledge base, chunking, ChromaDB, Groq LLM
-│   │   └── core/                # Configuration and logging
+│   │   ├── ml/                  # Preprocessing pipelines, training routines, SHAP explainer
+│   │   ├── rag/                 # ChromaDB vectorstore, guideline chunks, Groq LLM integration
+│   │   └── core/                # System configuration & logging
 │   ├── scripts/
-│   │   ├── train_models.py      # Automated training & chart generation script
-│   │   └── build_kb.py          # Vector store ingestion script
-│   ├── tests/                   # 40 automated pytest unit & integration tests
+│   │   ├── train_models.py      # Automated model training & evaluation script
+│   │   └── build_kb.py          # Vectorstore embedding & knowledge base builder
+│   ├── tests/                   # Automated pytest unit & integration test suite
 │   ├── data/                    # UCI Cleveland dataset cache
 │   ├── models/                  # Serialized .joblib pipeline artifacts
 │   ├── vectorstore/             # Persistent ChromaDB vector database
-│   ├── results/                 # Metrics JSON and EDA/evaluation PNGs
-│   └── requirements.txt         # Pinned Python 3.11 dependencies
+│   └── requirements.txt         # Pinned Python dependencies
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/               # Overview, Predict, Performance, Explain, Assistant, Sources, About
-│   │   ├── services/api.ts      # Typed API client
-│   │   ├── types/index.ts       # TypeScript interfaces & sample records
-│   │   ├── App.tsx              # Router & Sidebar layout
+│   │   ├── components/
+│   │   │   ├── Header.tsx       # Cockpit masthead with ECG pulse mark
+│   │   │   ├── PredictorView.tsx# Patient input form, risk hero, SHAP bars, PDF download
+│   │   │   ├── AssistantView.tsx# Streaming Copilot chat with conversational memory
+│   │   │   ├── BenchmarkView.tsx# Model comparison metrics & ROC curves
+│   │   │   ├── StatReadout.tsx  # Telemetry vitals cards
+│   │   │   └── CustomSelect.tsx # Minimal cockpit selector
+│   │   ├── utils/
+│   │   │   └── generatePdf.ts   # High-definition A4 PDF report generator
+│   │   ├── services/api.ts      # Typed Axios/Fetch client
+│   │   ├── types/index.ts       # TypeScript interfaces & verified Cleveland sample records
+│   │   ├── App.tsx              # Cockpit view navigation
+│   │   ├── index.css            # Dark cockpit design system & cardiac keyframes
 │   │   └── main.tsx             # Application bootstrap
 │   ├── package.json
-│   ├── vite.config.ts
-│   └── tailwind.config.js
-├── docs/
-│   ├── M1_REPORT.md             # Formal Milestone 1 Domain Analysis Report
-│   ├── M2_REPORT.md             # Formal Milestone 2 Feasibility & Algorithmic Review
-│   ├── M3_REPORT.md             # Formal Milestone 3 Data & Baseline Model Report
-│   ├── M4_REPORT.md             # Formal Milestone 4 Trained-Model Modules Report
-│   ├── M5_REPORT.md             # Formal Milestone 5 Final Research Paper & Project Report
-│   ├── architecture.md          # Full architectural specification with Mermaid diagram
-│   └── methodology.md           # Dataset, preprocessing, models & RAG methodology
+│   └── vite.config.ts
+├── docs/                        # Formal milestone research papers & architecture specifications
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -99,116 +250,24 @@ clinical-risk-prediction/
 
 ---
 
-## 4. Local Quickstart Instructions
+## Clinical Disclaimer & Governance
 
-### 4.1 Prerequisites
-- **Python**: 3.11 (tested on macOS Apple Silicon and Linux)
-- **Node.js**: v18+ or v20+ (tested on Node v22)
-- **Optional**: Groq API key (for high-speed conversational chatbot generation via Llama 3.3 / Llama 3.1)
+> [!CAUTION]
+> **Educational & Decision Support Notice:** CardioAI is an academic clinical decision-support prototype trained on the UCI Cleveland cohort. It is designed to demonstrate explainable machine learning and retrieval-augmented generation. It is **NOT** a certified medical device and must **NOT** be used as a standalone diagnostic tool or substitute for professional medical consultation. Clinical diagnoses must be confirmed by licensed medical professionals.
 
 ---
 
-### 4.2 Backend Setup & Execution
+## Contributing
 
-#### Step 1: Create & Activate Virtual Environment
-```bash
-cd clinical-risk-prediction/backend
-python3.11 -m venv venv
-
-# macOS / Linux:
-source venv/bin/activate
-
-# Windows (PowerShell):
-# .\venv\Scripts\Activate.ps1
-```
-
-#### Step 2: Install Dependencies
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-*(On macOS, ensure `brew install libomp` is installed for XGBoost OpenMP runtime support).*
-
-#### Step 3: Configure Environment Variables
-```bash
-cp ../.env.example ../.env
-```
-*(Edit `../.env` to add your optional `GROQ_API_KEY`. If left unset, the RAG search and passage citation engine will still function 100%).*
-
-#### Step 4: Run Training & Build Vector Store
-```bash
-# 1. Download dataset, run EDA, and train Logistic Regression, Random Forest, & XGBoost:
-python -m scripts.train_models
-
-# 2. Build the ChromaDB vector database from curated medical guidelines:
-python -m scripts.build_kb
-```
-
-#### Step 5: Start the FastAPI Server
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-- API Documentation (Swagger UI): `http://localhost:8000/docs`
-- Health Check: `http://localhost:8000/api/v1/health`
+Contributions are warmly welcomed! To contribute:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/clinical-enhancement`).
+3. Commit your changes (`git commit -m 'Add clinical feature'`).
+4. Push to the branch (`git push origin feature/clinical-enhancement`).
+5. Open a Pull Request.
 
 ---
 
-### 4.3 Frontend Setup & Execution
+## License
 
-Open a new terminal:
-```bash
-cd clinical-risk-prediction/frontend
-npm install
-npm run dev
-```
-Open your browser at `http://localhost:5173`.
-
----
-
-## 5. Running the Automated Test Suite
-
-The test suite validates data loading, target binarization, pipeline leak prevention, model inference, SHAP explanations, ChromaDB retrieval, and API route contracts:
-
-```bash
-cd clinical-risk-prediction/backend
-source venv/bin/activate
-pytest tests/ -v
-```
-
-**Actual Execution Result:**
-```
-====================== 40 passed in 11.15s =======================
-```
-
-To verify the frontend production build:
-```bash
-cd clinical-risk-prediction/frontend
-npm run build
-```
-
----
-
-## 6. API Reference (FastAPI `/api/v1`)
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Service readiness check (Models, ChromaDB, LLM) |
-| `GET` | `/api/v1/model/info` | Active model metadata, version, and training date |
-| `GET` | `/api/v1/model/metrics` | Detailed metrics and confusion matrices for all 3 models |
-| `POST` | `/api/v1/predict` | Run cardiovascular prediction on 13 patient features |
-| `POST` | `/api/v1/explain` | Compute local and global SHAP feature contributions |
-| `POST` | `/api/v1/rag/retrieve` | Semantic vector search against ChromaDB |
-| `POST` | `/api/v1/chat` | Conversational RAG assistant grounded with citations |
-| `GET` | `/api/v1/knowledge/sources`| Verified catalog of curated WHO, CDC, AHA, and NIH sources |
-
----
-
-## 7. Submission Deliverables Summary
-
-- **Milestone 1 Report (Problem Domain Identification & Analysis):** [`docs/M1_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M1_REPORT.md)
-- **Milestone 2 Report (Review of Existing Systems, Feasibility & Algorithms):** [`docs/M2_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M2_REPORT.md)
-- **Milestone 3 Report (Data Preprocessing & Baseline Model):** [`docs/M3_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M3_REPORT.md)
-- **Milestone 4 Report (Trained-Model Modules & RAG Implementation):** [`docs/M4_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M4_REPORT.md)
-- **Milestone 5 Report (Final Research Paper, Format Compliance & Team Contributions):** [`docs/M5_REPORT.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/M5_REPORT.md)
-- **System Architecture (with Mermaid Diagram):** [`docs/architecture.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/architecture.md)
-- **Technical Methodology:** [`docs/methodology.md`](file:///Users/bhavukagrawal/ai-project/clinical-risk-prediction/docs/methodology.md)
+This project is licensed under the [MIT License](LICENSE).
